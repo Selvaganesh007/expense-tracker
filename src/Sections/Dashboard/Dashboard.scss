@@ -1,0 +1,114 @@
+.dashboard {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  font-family: "Poppins", sans-serif;
+
+  // 🧊 Shared glass card style
+  .glass-card {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1); // more transparent for glass look
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2rem;
+    color: #fff; // ensure all text inside is white by default
+  }
+
+  .dashboard_amount {
+    flex: 1; // flexible half
+    display: flex;
+    flex-direction: column;
+
+    .total_amount {
+      h3 {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #fff;
+        margin: 0;
+      }
+      p {
+        color: #ddd;
+        margin: 0.5rem 0 0;
+      }
+    }
+
+    .Transactions {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 2rem;
+
+      .Transactions_sections {
+        flex: 1;
+        .label {
+          display: flex;
+          justify-content: space-between;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #fff;
+        }
+        .transaction_amount {
+          font-size: 2rem;
+          margin: 0.5rem 0;
+          color: #fff;
+        }
+        p {
+          color: #ddd;
+          margin: 0;
+        }
+      }
+    }
+
+    .pie_chart {
+      margin-top: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 1rem;
+    }
+  }
+
+  .expense {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+
+    p {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0 0 1rem;
+    }
+
+    .expense_transaction_header,
+    .expense_transaction {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem;
+      align-items: center;
+    }
+
+    .expense_transaction_header {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .expense_transaction {
+      margin: 0.5rem 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+      transition: 0.3s ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+      }
+
+      div {
+        color: #fff;
+      }
+    }
+  }
+}
+

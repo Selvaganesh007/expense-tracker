@@ -1,0 +1,39 @@
+.section_tab {
+  position: fixed;
+  top: 6%;
+  left: 13%;
+  padding: 2rem 4rem;
+  width: 80%;
+  height: calc(100vh - 6%);
+  overflow-y: auto;
+
+  /* Add nice background: soft gradient or neutral */
+  // background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+
+  /* Or for a glass effect: */
+  /* 
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  */
+
+  color: #333; /* Dark text for contrast */
+}
+
+// ✅ Dark gradient background for the whole page
+body {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+body[data-theme="dark"] {
+  background: linear-gradient(135deg, #141e30, #243b55);
+  color: #fff;
+}
+
+body[data-theme="light"] {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #333;
+}

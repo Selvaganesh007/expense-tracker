@@ -1,0 +1,31 @@
+.expense {
+  color: #fff;
+  .expense_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0 2rem 0;
+  }
+  .expense_list {
+    .expense_item {
+      margin: 1rem 0;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border: 0.1rem solid black;
+      border-radius: 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      .expense_item-amount {
+        font-size: 1.5rem;
+        font-weight: 600;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+      }
+      .expense_item-action {
+        display: flex;
+        gap: 1rem;
+      }
+    }
+  }
+}

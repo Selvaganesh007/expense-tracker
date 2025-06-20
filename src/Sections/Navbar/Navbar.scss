@@ -1,0 +1,26 @@
+.navbar {
+  background: linear-gradient(135deg, #141e30, #243b55);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  z-index: 99;
+  width: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 5vh;
+  .app_name {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+    color: white;
+    padding-left: 2rem;
+  }
+  .profile_icon {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding-right: 2rem;
+  }
+}

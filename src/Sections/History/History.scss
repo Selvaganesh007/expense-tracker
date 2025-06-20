@@ -1,0 +1,35 @@
+.history {
+  padding: 2rem;
+
+  .history_header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+  }
+
+  // AntD table customization (optional):
+  .ant-table {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    overflow: hidden;
+
+    .ant-table-thead > tr > th {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .ant-table-tbody > tr > td {
+      color: #fff;
+      background: transparent;
+    }
+  }
+}
