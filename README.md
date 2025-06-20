@@ -1,12 +1,50 @@
-# React + Vite
+💰 Expense & Income Tracker Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple yet powerful personal finance manager built with **React** and **Ant Design**. Track your expenses and income, visualize spending patterns with dynamic charts, customize categories, and manage your money with ease — all in your browser with no backend needed!
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+**[Live Demo](#)** — https://expense-tracker-phi-nine-61.vercel.app/
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✨ Features
+
+✅ **Add, edit, delete** expenses and income records  
+✅ **Unique 4-digit ID** for each record  
+✅ **Search** by name, amount, or type  
+✅ **Filter** by source (Expense/Income) and type  
+✅ **Dashboard** with:
+   - Total balance, income, and spending for the current month
+   - Pie chart of expense breakdown by category
+   - Recent 10 transactions list  
+✅ **Manage categories** (add/remove expense and income types)  
+✅ **Theme switch** (Light / Dark mode)  
+✅ **Dynamic currency** (select from ₹, $, €, £, ¥)  
+✅ **Export** transactions to Excel by month and type  
+✅ **Import** data from JSON file  
+✅ **Reset all data** with a single click  
+✅ Fully **responsive UI** — works on mobile, tablet, and desktop  
+✅ **LocalStorage** based — no server needed  
+
+---
+
+## ⚙️ Tech Stack
+
+- **React.js** — Frontend framework
+- **Ant Design** — UI library for modern components
+- **Chart.js** — Pie charts for expense breakdown
+- **Day.js** — Lightweight date utility
+- **Context API** — Global state for settings
+- **LocalStorage** — Persistent data storage
+
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/your-username/expense-income-tracker.git
+cd expense-income-tracker
