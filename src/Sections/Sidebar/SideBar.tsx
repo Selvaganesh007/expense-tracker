@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import "./SideBar.scss";
 import { MdOutlineDashboard, MdOutlineSettings } from "react-icons/md";
-import { GiExpense, GiProfit } from "react-icons/gi";
+import { HiCollection } from "react-icons/hi";
 import { FaHistory } from "react-icons/fa";
 import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
-import { SIDEBAR_TABS_CONST } from "../../Constents/SidebarTabs";
+import { SIDEBAR_TABS_CONST } from "../../Constents/SIDEBAR_TABS_CONST";
 
 // ✅ MUST HAVE THIS:
 const SIDEBAR_ITEMS = [
@@ -13,12 +13,8 @@ const SIDEBAR_ITEMS = [
     icon: <MdOutlineDashboard />,
   },
   {
-    name: SIDEBAR_TABS_CONST.expense,
-    icon: <GiExpense />,
-  },
-  {
-    name: SIDEBAR_TABS_CONST.income,
-    icon: <GiProfit />,
+    name: SIDEBAR_TABS_CONST.collection,
+    icon: <HiCollection />,
   },
   {
     name: SIDEBAR_TABS_CONST.history,

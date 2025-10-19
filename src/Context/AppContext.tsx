@@ -11,56 +11,52 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     currency: "₹",
     theme: "light",
   });
-
-  const [income, setIncome] = useState([]);
   const [incomeTypes, setIncomeTypes] = useState([
     "Salary",
     "Freelance",
     "Bonus",
     "Investment",
+    "Intrest",
     "Other",
   ]);
 
-  const [expenses, setExpenses] = useState([]);
+  const [collection, setCollection] = useState([]);
   const [expenseTypes, setExpenseTypes] = useState([
     "Rent",
     "Bill",
     "Food",
+    "Cloths",
+    "Bike",
+    "Fuel",
     "Shopping",
     "Savings",
   ]);
 
-  // ✅ Load all data from localStorage once
+  // ✅ Load all data from firebase once
   useEffect(() => {
     const savedSettings = localStorage.getItem("settings");
-    const savedIncome = localStorage.getItem("income");
+    const savedCollection = localStorage.getItem("collection");
     const savedIncomeTypes = localStorage.getItem("incomeTypes");
-    const savedExpenses = localStorage.getItem("expenses");
     const savedExpenseTypes = localStorage.getItem("expenseTypes");
 
     if (savedSettings) setSettings(JSON.parse(savedSettings));
-    if (savedIncome) setIncome(JSON.parse(savedIncome));
+    if (savedCollection) setCollection(JSON.parse(savedCollection));
     if (savedIncomeTypes) setIncomeTypes(JSON.parse(savedIncomeTypes));
-    if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
     if (savedExpenseTypes) setExpenseTypes(JSON.parse(savedExpenseTypes));
   }, []);
 
-  // ✅ Always sync to localStorage
+  // ✅ Always sync to firebase
   useEffect(() => {
     localStorage.setItem("settings", JSON.stringify(settings));
   }, [settings]);
-
-  useEffect(() => {
-    localStorage.setItem("income", JSON.stringify(income));
-  }, [income]);
 
   useEffect(() => {
     localStorage.setItem("incomeTypes", JSON.stringify(incomeTypes));
   }, [incomeTypes]);
 
   useEffect(() => {
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [expenses]);
+    localStorage.setItem("collection", JSON.stringify(collection));
+  }, [collection]);
 
   useEffect(() => {
     localStorage.setItem("expenseTypes", JSON.stringify(expenseTypes));
@@ -71,12 +67,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       value={{
         settings,
         setSettings,
-        income,
-        setIncome,
         incomeTypes,
         setIncomeTypes,
-        expenses,
-        setExpenses,
+        collection,
+        setCollection,
         expenseTypes,
         setExpenseTypes,
       }}

@@ -1,7 +1,6 @@
 export const SIDEBAR_TABS_CONST: Record<string, string> = {
   dashboard: "Dashboard",
-  expense: "Expense",
-  income: "Income",
+  collection: "Collection",
   history: "History",
   Settings: "Settings",
 };

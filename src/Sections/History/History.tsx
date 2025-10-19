@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./History.scss";
-import { Table, Input, Select } from "antd";
+import { Table, Input } from "antd";
 import dayjs from "dayjs";
 
 const { Search } = Input;
-const { Option } = Select;
 
 function History() {
   const [transactions, setTransactions] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [filterType, setFilterType] = useState("");
 
   useEffect(() => {
     const expenses =
@@ -83,8 +81,7 @@ function History() {
       item.name.toLowerCase().includes(searchText.toLowerCase()) ||
       item.amount.toString().includes(searchText) ||
       item.type.toLowerCase().includes(searchText.toLowerCase());
-    const matchesType = filterType === "" || item.source === filterType;
-    return matchesSearch && matchesType;
+    return matchesSearch;
   });
 
   return (
@@ -97,16 +94,6 @@ function History() {
           value={searchText}
           style={{ width: 200, marginRight: 16 }}
         />
-        <Select
-          placeholder="Filter by Source"
-          allowClear
-          value={filterType || undefined}
-          onChange={(value) => setFilterType(value || "")}
-          style={{ width: 180 }}
-        >
-          <Option value="Income">Income</Option>
-          <Option value="Expense">Expense</Option>
-        </Select>
       </div>
       <Table
         columns={columns}
