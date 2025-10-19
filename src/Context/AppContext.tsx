@@ -1,10 +1,11 @@
 import React, { createContext, useState, useEffect } from "react";
 
-// ✅ Create context
-export const AppContext = createContext();
+interface AppProviderProps {
+  children: React.ReactElement;
+}
 
-// ✅ Provider component
-export const AppProvider = ({ children }) => {
+export const AppContext = createContext<any>(null);
+export const AppProvider = ({ children }: AppProviderProps) => {
   // Global states
   const [settings, setSettings] = useState({
     currency: "₹",
@@ -13,12 +14,20 @@ export const AppProvider = ({ children }) => {
 
   const [income, setIncome] = useState([]);
   const [incomeTypes, setIncomeTypes] = useState([
-    "Salary", "Freelance", "Bonus", "Investment", "Other"
+    "Salary",
+    "Freelance",
+    "Bonus",
+    "Investment",
+    "Other",
   ]);
 
   const [expenses, setExpenses] = useState([]);
   const [expenseTypes, setExpenseTypes] = useState([
-    "Rent", "Bill", "Food", "Shopping", "Savings"
+    "Rent",
+    "Bill",
+    "Food",
+    "Shopping",
+    "Savings",
   ]);
 
   // ✅ Load all data from localStorage once
@@ -60,11 +69,16 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider
       value={{
-        settings, setSettings,
-        income, setIncome,
-        incomeTypes, setIncomeTypes,
-        expenses, setExpenses,
-        expenseTypes, setExpenseTypes,
+        settings,
+        setSettings,
+        income,
+        setIncome,
+        incomeTypes,
+        setIncomeTypes,
+        expenses,
+        setExpenses,
+        expenseTypes,
+        setExpenseTypes,
       }}
     >
       {children}

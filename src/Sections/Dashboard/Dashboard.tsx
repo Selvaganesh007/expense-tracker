@@ -17,30 +17,30 @@ function Dashboard() {
   const [income, setIncome] = useState([]);
 
   useEffect(() => {
-    const exp = JSON.parse(localStorage.getItem("expenses")) || [];
-    const inc = JSON.parse(localStorage.getItem("income")) || [];
+    const exp = JSON.parse(localStorage.getItem("expenses") as string) || [];
+    const inc = JSON.parse(localStorage.getItem("income") as string) || [];
     setExpenses(exp);
     setIncome(inc);
   }, []);
 
   const currentMonth = dayjs().format("YYYY-MM");
-  const monthlyExpenses = expenses.filter((exp) =>
+  const monthlyExpenses = expenses.filter((exp: any) =>
     exp.date.startsWith(currentMonth)
   );
-  const monthlyIncome = income.filter((inc) =>
+  const monthlyIncome = income.filter((inc: any) =>
     inc.date.startsWith(currentMonth)
   );
 
   const totalSpending = monthlyExpenses.reduce(
-    (sum, exp) => sum + Number(exp.amount),
+    (sum, exp: any) => sum + Number(exp.amount),
     0
   );
   const totalIncome = monthlyIncome.reduce(
-    (sum, inc) => sum + Number(inc.amount),
+    (sum, inc: any) => sum + Number(inc.amount),
     0
   );
 
-  const expenseByType = expenses.reduce((acc, exp) => {
+  const expenseByType = expenses.reduce((acc: any, exp: any) => {
     acc[exp.type] = (acc[exp.type] || 0) + Number(exp.amount);
     return acc;
   }, {});
@@ -69,12 +69,12 @@ function Dashboard() {
   };
 
   const allTransactions = [
-    ...expenses.map((e) => ({ ...e, type: "Expense" })),
-    ...income.map((i) => ({ ...i, type: "Income" })),
+    ...expenses.map((e: any) => ({ ...e, type: "Expense" })),
+    ...income.map((i: any) => ({ ...i, type: "Income" })),
   ]
     .sort((a, b) => {
-      const dateTimeA = dayjs(`${a.date} ${a.time}`);
-      const dateTimeB = dayjs(`${b.date} ${b.time}`);
+      const dateTimeA: any = dayjs(`${a.date} ${a.time}`);
+      const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
       return dateTimeB - dateTimeA;
     })
     .slice(0, 10);
