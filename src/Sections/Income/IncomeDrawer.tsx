@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Drawer,
   Space,
@@ -12,34 +11,44 @@ import dayjs from "dayjs";
 
 const { Option } = Select;
 
-function ExpenseDrawer({
+interface IncomeDrawerProps {
+  drawerOpen: any;
+  onDrawerClose: any;
+  incomeDetails: any;
+  setIncomeDetails: any;
+  onIncomeAdd: any;
+  incomeTypes: any;
+  setIncomeTypes: any;
+}
+
+function IncomeDrawer({
   drawerOpen,
   onDrawerClose,
-  expenseDetails,
-  setExpenseDetails,
-  onExpenseAdd,
-  expenseTypes,
-  setExpenseTypes,
-}) {
-  const handleChange = (field, value) => {
-    setExpenseDetails({
-      ...expenseDetails,
+  incomeDetails,
+  setIncomeDetails,
+  onIncomeAdd,
+  incomeTypes,
+  setIncomeTypes,
+}: IncomeDrawerProps) {
+  const handleChange = (field: string, value: any) => {
+    setIncomeDetails({
+      ...incomeDetails,
       [field]: value,
     });
   };
 
-  const handleTypeChange = (value) => {
-    if (value && !expenseTypes.includes(value)) {
-      const updatedTypes = [...expenseTypes, value];
-      setExpenseTypes(updatedTypes);
-      localStorage.setItem("expenseTypes", JSON.stringify(updatedTypes)); // ✅ store immediately
+  const handleTypeChange = (value: any) => {
+    if (value && !incomeTypes.includes(value)) {
+      const updatedTypes = [...incomeTypes, value];
+      setIncomeTypes(updatedTypes);
+      localStorage.setItem("incomeTypes", JSON.stringify(updatedTypes)); // ✅ store immediately
     }
     handleChange("type", value);
   };
 
   return (
     <Drawer
-      title={expenseDetails.expenseID ? "Edit Expense" : "Add New Expense"}
+      title={incomeDetails.incomeID ? "Edit Income" : "Add New Income"}
       placement="right"
       width={400}
       onClose={onDrawerClose}
@@ -47,16 +56,16 @@ function ExpenseDrawer({
       extra={
         <Space>
           <Button onClick={onDrawerClose}>Cancel</Button>
-          <Button type="primary" onClick={onExpenseAdd}>
-            {expenseDetails.expenseID ? "Update" : "Add"}
+          <Button type="primary" onClick={onIncomeAdd}>
+            {incomeDetails.incomeID ? "Update" : "Add"}
           </Button>
         </Space>
       }
     >
       <label>Name</label>
       <Input
-        placeholder="Expense name"
-        value={expenseDetails.name}
+        placeholder="Income name"
+        value={incomeDetails.name}
         onChange={(e) => handleChange("name", e.target.value)}
       />
 
@@ -64,11 +73,11 @@ function ExpenseDrawer({
       <Select
         showSearch
         placeholder="Select or add type"
-        value={expenseDetails.type || undefined}
+        value={incomeDetails.type || undefined}
         onChange={handleTypeChange}
         style={{ width: "100%" }}
       >
-        {expenseTypes.map((type) => (
+        {incomeTypes.map((type: any) => (
           <Option key={type} value={type}>
             {type}
           </Option>
@@ -79,25 +88,25 @@ function ExpenseDrawer({
       <Input
         type="number"
         placeholder="Amount"
-        value={expenseDetails.amount}
+        value={incomeDetails.amount}
         onChange={(e) => handleChange("amount", e.target.value)}
       />
 
       <label style={{ marginTop: 16 }}>Date</label>
       <DatePicker
         style={{ width: "100%" }}
-        value={expenseDetails.date ? dayjs(expenseDetails.date) : null}
+        value={incomeDetails.date ? dayjs(incomeDetails.date) : null}
         onChange={(date, dateString) => handleChange("date", dateString)}
       />
 
       <label style={{ marginTop: 16 }}>Time</label>
       <TimePicker
         style={{ width: "100%" }}
-        value={expenseDetails.time ? dayjs(expenseDetails.time, "HH:mm") : null}
+        value={incomeDetails.time ? dayjs(incomeDetails.time, "HH:mm") : null}
         onChange={(time, timeString) => handleChange("time", timeString)}
       />
     </Drawer>
   );
 }
 
-export default ExpenseDrawer;
+export default IncomeDrawer;

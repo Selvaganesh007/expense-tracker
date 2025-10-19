@@ -12,15 +12,16 @@ function History() {
   const [filterType, setFilterType] = useState("");
 
   useEffect(() => {
-    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-    const income = JSON.parse(localStorage.getItem("income")) || [];
+    const expenses =
+      JSON.parse(localStorage.getItem("expenses") as string) || [];
+    const income = JSON.parse(localStorage.getItem("income") as string) || [];
     const all = [
-      ...expenses.map((e) => ({
+      ...expenses.map((e: any) => ({
         ...e,
         id: e.expenseID || e.id || Math.floor(1000 + Math.random() * 9000),
         source: "Expense",
       })),
-      ...income.map((i) => ({
+      ...income.map((i: any) => ({
         ...i,
         id: i.incomeID || i.id || Math.floor(1000 + Math.random() * 9000),
         source: "Income",
@@ -29,7 +30,7 @@ function History() {
     all.sort((a, b) =>
       dayjs(`${b.date} ${b.time}`).diff(dayjs(`${a.date} ${a.time}`))
     );
-    setTransactions(all);
+    setTransactions(all as any);
   }, []);
 
   const columns = [
@@ -62,9 +63,11 @@ function History() {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => (
+      render: (amount: string) => (
         <>
-          {JSON.parse(localStorage.getItem("settings"))?.currency || "₹"} {amount}
+          {JSON.parse(localStorage.getItem("settings") as string)?.currency ||
+            "₹"}{" "}
+          {amount}
         </>
       ),
     },
@@ -75,13 +78,12 @@ function History() {
     },
   ];
 
-  const filteredData = transactions.filter((item) => {
+  const filteredData = transactions.filter((item: any) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchText.toLowerCase()) ||
       item.amount.toString().includes(searchText) ||
       item.type.toLowerCase().includes(searchText.toLowerCase());
-    const matchesType =
-      filterType === "" || item.source === filterType;
+    const matchesType = filterType === "" || item.source === filterType;
     return matchesSearch && matchesType;
   });
 

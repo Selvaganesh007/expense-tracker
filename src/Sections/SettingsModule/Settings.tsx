@@ -36,7 +36,7 @@ function Settings() {
   const currency = settings.currency || "₹";
   const theme = settings.theme || "light";
 
-  const updateSettings = (key, value) => {
+  const updateSettings = (key: string, value: any) => {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
     localStorage.setItem("settings", JSON.stringify(updated));
@@ -54,8 +54,8 @@ function Settings() {
     }
   };
 
-  const removeExpenseType = (type) => {
-    const updated = expenseTypes.filter((t) => t !== type);
+  const removeExpenseType = (type: string) => {
+    const updated = expenseTypes.filter((t: any) => t !== type);
     setExpenseTypes(updated);
     localStorage.setItem("expenseTypes", JSON.stringify(updated));
   };
@@ -69,34 +69,35 @@ function Settings() {
     }
   };
 
-  const removeIncomeType = (type) => {
-    const updated = incomeTypes.filter((t) => t !== type);
+  const removeIncomeType = (type: string) => {
+    const updated = incomeTypes.filter((t: any) => t !== type);
     setIncomeTypes(updated);
     localStorage.setItem("incomeTypes", JSON.stringify(updated));
   };
 
   const handleExport = () => {
-    const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-    const income = JSON.parse(localStorage.getItem("income")) || [];
-    let exportData = [];
+    const expenses =
+      JSON.parse(localStorage.getItem("expenses") as string) || [];
+    const income = JSON.parse(localStorage.getItem("income") as string) || [];
+    let exportData: any[] = [];
 
     if (dataType === "expense" || dataType === "both") {
       exportData = exportData.concat(
         expenses
-          .filter((e) =>
+          .filter((e: any) =>
             date ? e.date.startsWith(dayjs(date).format("YYYY-MM")) : true
           )
-          .map((e) => ({ ...e, type: "Expense" }))
+          .map((e: any) => ({ ...e, type: "Expense" }))
       );
     }
 
     if (dataType === "income" || dataType === "both") {
       exportData = exportData.concat(
         income
-          .filter((i) =>
+          .filter((i: any) =>
             date ? i.date.startsWith(dayjs(date).format("YYYY-MM")) : true
           )
-          .map((i) => ({ ...i, type: "Income" }))
+          .map((i: any) => ({ ...i, type: "Income" }))
       );
     }
 
@@ -108,19 +109,19 @@ function Settings() {
     message.success("Exported successfully!");
   };
 
-  const handleImport = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = JSON.parse(e.target.result);
-      if (data.expenses)
-        localStorage.setItem("expenses", JSON.stringify(data.expenses));
-      if (data.income)
-        localStorage.setItem("income", JSON.stringify(data.income));
-      message.success("Data imported successfully!");
-    };
-    reader.readAsText(file);
-    return false;
-  };
+  // const handleImport = (file) => {
+  //   const reader = new FileReader();
+  //   reader.onload = (e) => {
+  //     const data = JSON.parse(e.target.result);
+  //     if (data.expenses)
+  //       localStorage.setItem("expenses", JSON.stringify(data.expenses));
+  //     if (data.income)
+  //       localStorage.setItem("income", JSON.stringify(data.income));
+  //     message.success("Data imported successfully!");
+  //   };
+  //   reader.readAsText(file);
+  //   return false;
+  // };
 
   const handleReset = () => {
     localStorage.clear();
@@ -154,7 +155,9 @@ function Settings() {
         <label>Theme:</label>
         <Switch
           checked={theme === "dark"}
-          onChange={(checked) => updateSettings("theme", checked ? "dark" : "light")}
+          onChange={(checked) =>
+            updateSettings("theme", checked ? "dark" : "light")
+          }
           checkedChildren="Dark"
           unCheckedChildren="Light"
         />
@@ -163,7 +166,7 @@ function Settings() {
       <div className="settings_item">
         <label>Expense Types:</label>
         <div>
-          {expenseTypes.map((type) => (
+          {expenseTypes.map((type: any) => (
             <Tag
               key={type}
               closable
@@ -188,7 +191,7 @@ function Settings() {
       <div className="settings_item">
         <label>Income Types:</label>
         <div>
-          {incomeTypes.map((type) => (
+          {incomeTypes.map((type: any) => (
             <Tag
               key={type}
               closable
@@ -234,7 +237,7 @@ function Settings() {
 
       <div className="settings_item">
         <label>Import:</label>
-        <Upload beforeUpload={handleImport} showUploadList={false}>
+        <Upload beforeUpload={() => {}} showUploadList={false}>
           <Button icon={<UploadOutlined />}>Upload JSON</Button>
         </Upload>
       </div>

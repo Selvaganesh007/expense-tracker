@@ -4,7 +4,7 @@ import { MdOutlineDashboard, MdOutlineSettings } from "react-icons/md";
 import { GiExpense, GiProfit } from "react-icons/gi";
 import { FaHistory } from "react-icons/fa";
 import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
-import { SIDEBAR_TABS_CONST } from '../../Constents/SidebarTabs';
+import { SIDEBAR_TABS_CONST } from "../../Constents/SidebarTabs";
 
 // ✅ MUST HAVE THIS:
 const SIDEBAR_ITEMS = [
@@ -30,7 +30,11 @@ const SIDEBAR_ITEMS = [
   },
 ];
 
-function SideBar({ SetCurrentTab }) {
+interface SideBarProps {
+  SetCurrentTab: React.Dispatch<React.SetStateAction<string>>;
+}
+
+function SideBar({ SetCurrentTab }: SideBarProps) {
   const [sidebarClose, setSidebarClose] = useState(true);
   const sidebarClass = sidebarClose ? "sideBar" : "sideBar_icon";
 

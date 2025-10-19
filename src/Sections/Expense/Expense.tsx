@@ -17,15 +17,22 @@ const DEFAULT_EXPENSE = {
   amount: "",
 };
 
+export interface ExpenseType {
+  expenseID: number;
+  name: string;
+  type: string;
+  date: string;
+  time: string;
+  amount: string;
+}
+
 function Expense() {
-  const {
-    expenses, setExpenses,
-    expenseTypes, setExpenseTypes,
-    settings,
-  } = useContext(AppContext);
+  const { expenses, setExpenses, expenseTypes, setExpenseTypes, settings } =
+    useContext(AppContext);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expenseDetails, setExpenseDetails] = useState(DEFAULT_EXPENSE);
+  const [expenseDetails, setExpenseDetails] =
+    useState<ExpenseType>(DEFAULT_EXPENSE);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -42,6 +49,7 @@ function Expense() {
   const onDrawerClose = () => {
     setDrawerOpen(false);
     setExpenseDetails(DEFAULT_EXPENSE);
+    return true;
   };
 
   const onAddClick = () => {
@@ -56,7 +64,7 @@ function Expense() {
 
   const onExpenseAdd = () => {
     if (expenseDetails.expenseID) {
-      const updated = expenses.map((exp) =>
+      const updated = expenses.map((exp: any) =>
         exp.expenseID === expenseDetails.expenseID ? expenseDetails : exp
       );
       setExpenses(updated);
@@ -70,16 +78,16 @@ function Expense() {
     onDrawerClose();
   };
 
-  const onEdit = (expense) => {
+  const onEdit = (expense: any) => {
     setExpenseDetails(expense);
     setDrawerOpen(true);
   };
 
-  const onDelete = (id) => {
-    setExpenses(expenses.filter((exp) => exp.expenseID !== id));
+  const onDelete = (id: string) => {
+    setExpenses(expenses.filter((exp: any) => exp.expenseID !== id));
   };
 
-  const filteredExpenses = expenses.filter((exp) => {
+  const filteredExpenses = expenses.filter((exp: any) => {
     const matchesSearch =
       exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
       exp.amount.toString().includes(debouncedSearchText);
@@ -109,7 +117,7 @@ function Expense() {
           onChange={(value) => setFilterType(value || "")}
           style={{ width: 180, marginRight: 16 }}
         >
-          {expenseTypes.map((type) => (
+          {expenseTypes.map((type: any) => (
             <Option key={type} value={type}>
               {type}
             </Option>
@@ -125,7 +133,7 @@ function Expense() {
         {filteredExpenses.length === 0 && (
           <p>No expenses match your search/filter.</p>
         )}
-        {filteredExpenses.map((exp) => (
+        {filteredExpenses.map((exp: any) => (
           <div key={exp.expenseID} className="expense_item">
             <div>{exp.name}</div>
             <div>{exp.type}</div>
