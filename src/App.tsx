@@ -1,14 +1,17 @@
-import { useEffect } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Base from "./Base";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { app, db } from "../firebase";
+import Auth from "./views/Auth/Auth";
 
 function App() {
   return (
-    <div>
-      <Base />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/sign-in" element={<Auth />} />
+        <Route path="/sign-up" element={<Auth />} />
+        <Route path="/" element={<Base />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
