@@ -3,4 +3,5 @@ export const SIDEBAR_TABS_CONST: Record<string, string> = {
   collection: "Collection",
   history: "History",
   Settings: "Settings",
+  signin: "sign-in",
 };

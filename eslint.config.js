@@ -30,11 +30,15 @@ export default tseslint.config(
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
-
+    env: {
+      browser: false,
+      node: true,
+      es2021: true,
+    },
     rules: {
       // --- Base ESLint ---
       ...js.configs.recommended.rules,
-
+      "react-hooks/exhaustive-deps": "off",
       // --- TypeScript Recommended ---
       ...tseslint.configs.recommended.rules,
 

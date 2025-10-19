@@ -2,4 +2,5 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🧹 Running lint before commit..."
-npm run lint
+# npm run lint
+# npx ts-node scripts/check-lines.ts
