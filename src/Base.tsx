@@ -3,11 +3,10 @@ import SideBar from "./Sections/Sidebar/SideBar";
 import Navbar from "./Sections/Navbar/Navbar";
 import "./Base.scss";
 import Dashboard from "./Sections/Dashboard/Dashboard";
-import Expense from "./Sections/Expense/Expense";
-import Income from "./Sections/Income/Income";
 import History from "./Sections/History/History";
 import Settings from "./Sections/SettingsModule/Settings";
-import { SIDEBAR_TABS_CONST } from "./Constents/SidebarTabs";
+import { SIDEBAR_TABS_CONST } from "./Constents/SIDEBAR_TABS_CONST";
+import Collection from "./Sections/Collection/Collection";
 
 function Base() {
   const [currentTab, SetCurrentTab] = useState<string>("Dashboard");
@@ -20,10 +19,8 @@ function Base() {
     switch (currentTab) {
       case SIDEBAR_TABS_CONST.dashboard:
         return <Dashboard />;
-      case SIDEBAR_TABS_CONST.expense:
-        return <Expense />;
-      case SIDEBAR_TABS_CONST.income:
-        return <Income />;
+      case SIDEBAR_TABS_CONST.collection:
+        return <Collection />;
       case SIDEBAR_TABS_CONST.history:
         return <History />;
       case SIDEBAR_TABS_CONST.Settings:

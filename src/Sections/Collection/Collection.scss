@@ -1,13 +1,13 @@
-.income {
+.collection {
   color: #fff;
-  .income_header {
+  .collection_header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 2rem 0 2rem 0;
   }
-  .income_list {
-    .income_item {
+  .collection_list {
+    .collection_item {
       margin: 1rem 0;
       padding: 1rem;
       display: flex;
@@ -17,12 +17,7 @@
       border-radius: 1rem;
       font-size: 1rem;
       font-weight: 500;
-      .income_item-amount {
-        font-size: 1.5rem;
-        font-weight: 600;
-        font-family: Verdana, Geneva, Tahoma, sans-serif;
-      }
-      .income_item-action {
+      .collection_item-action {
         display: flex;
         gap: 1rem;
       }
