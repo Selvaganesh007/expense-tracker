@@ -19,6 +19,11 @@ const SIDEBAR_ITEMS = [
     route: "/home/collection",
   },
   {
+    name: SIDEBAR_TABS_CONST.cash_flow,
+    icon: <MdOutlineDashboard />,
+    route: "/home/cash-flow",
+  },
+  {
     name: SIDEBAR_TABS_CONST.history,
     icon: <FaHistory />,
     route: "/home/history",

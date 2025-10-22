@@ -2,8 +2,10 @@
   color: #fff;
   .collection_header {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     margin: 2rem 0 2rem 0;
   }
   .collection_list {
