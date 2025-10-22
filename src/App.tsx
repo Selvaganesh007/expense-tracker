@@ -1,16 +1,42 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Base from "./Base";
 import Auth from "./views/Auth/Auth";
 import NotFound from "./views/Auth/NotFound/NotFound";
+import ProductedRoute from "./views/Auth/NotFound/ProductedRoute";
+import Collection from "./Sections/Collection/Collection";
+import Dashboard from "./Sections/Dashboard/Dashboard";
+import History from "./Sections/History/History";
+import Settings from "./Sections/SettingsModule/Settings";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Redirect root to sign-in */}
+        <Route path="/" element={<Navigate to="/sign-in" replace />} />
+
+        {/* Protected Base Layout */}
+        <Route
+          path="/home"
+          element={
+            <ProductedRoute>
+              <Base />
+            </ProductedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} /> {/* /home */}
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="collection" element={<Collection />} />
+          <Route path="history" element={<History />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+
+        {/* Auth Routes */}
         <Route path="/sign-in" element={<Auth />} />
         <Route path="/sign-up" element={<Auth />} />
-        <Route path="/" element={<Base />} />
+
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

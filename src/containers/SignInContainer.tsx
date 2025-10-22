@@ -3,7 +3,7 @@ import { FormElementContainer } from "../views/Auth/index.styles";
 import { FaGoogle } from "react-icons/fa";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import { auth, db, provider } from "../../firebase";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 
 function SignInContainer() {
@@ -41,6 +41,7 @@ function SignInContainer() {
               photoUrl: user.photoURL,
             });
           }
+          navigate("/home");
         } else {
           console.log("No user signed in");
         }

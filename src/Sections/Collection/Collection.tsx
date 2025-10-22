@@ -2,29 +2,28 @@ import React, { useState, useEffect, useContext } from "react";
 import "./Collection.scss";
 import { Button, Input, Modal } from "antd";
 import { AppContext } from "../../Context/AppContext";
-import { addDoc, deleteDoc, doc, getDocs, serverTimestamp, updateDoc } from "firebase/firestore";
+import { addDoc, deleteDoc, doc, getDocs, serverTimestamp, updateDoc, collection } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { DB_COLLECTION_CONST } from "../../Constents/DB_COLLECTION_CONST";
 
 const { Search } = Input;
 
 const DEFAULT_COLLECTION = {
-  id: 0,
   name: "",
+  user_id: "",
 };
 
 export interface CollectionType {
-  id: number;
   name: string;
+  user_id: string,
 }
 
 function Collection() {
-  const { collection } = useContext(AppContext);
+  const { profileDetails } = useContext(AppContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collectionDetails, setCollectionDetails] = useState<CollectionType>(DEFAULT_COLLECTION);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
-
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -45,25 +44,33 @@ function Collection() {
   };
 
   const onCollectionAdd = async () => {
-    if (!collectionDetails.id) {
-      // delete collectionDetails.id;
-      await addDoc(collection(db, DB_COLLECTION_CONST.collection, collectionDetails.id), {
-        ...collectionDetails,
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-      });
-      const querySnapshot = await getDocs(collection(db, DB_COLLECTION_CONST.collection));
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
-      });
-    } else {
-      const expenseRef = doc(db, DB_COLLECTION_CONST.collection);
-      await updateDoc(expenseRef, {
-        ...collectionDetails,
-        updated_at: serverTimestamp(),
-      });
-    }
+    console.log("profileDetails", profileDetails);
+    await addDoc(collection(db, DB_COLLECTION_CONST.collection), {
+      ...collectionDetails,
+      user_id: profileDetails.user_id,
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    });
     onDrawerClose();
+
+    // if (!collectionDetails.id) {
+    //   await addDoc(collection(db, DB_COLLECTION_CONST.collection, collectionDetails.id), {
+    //     ...collectionDetails,
+    //     created_at: serverTimestamp(),
+    //     updated_at: serverTimestamp(),
+    //   });
+    //   const querySnapshot = await getDocs(collection(db, DB_COLLECTION_CONST.collection));
+    //   querySnapshot.forEach((doc) => {
+    //     console.log(doc.id, " => ", doc.data());
+    //   });
+    // } else {
+    //   const expenseRef = doc(db, DB_COLLECTION_CONST.collection);
+    //   await updateDoc(expenseRef, {
+    //     ...collectionDetails,
+    //     updated_at: serverTimestamp(),
+    //   });
+    // }
+    // onDrawerClose();
   };
 
   const onEdit = (expense: any) => {
@@ -71,23 +78,23 @@ function Collection() {
     setDrawerOpen(true);
   };
 
-  const onDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this collection?"))
-      return;
-    try {
-      await deleteDoc(collection(db, DB_COLLECTION_CONST.collection, id));
-      // fetchExpenses(); // refresh the table
-    } catch (error) {
-      console.error("Error deleting expense:", error);
-    }
-  };
+  // const onDelete = async (id: string) => {
+  //   if (!window.confirm("Are you sure you want to delete this collection?"))
+  //     return;
+  //   try {
+  //     await deleteDoc(collection(db, DB_COLLECTION_CONST.collection, id));
+  //     // fetchExpenses(); // refresh the table
+  //   } catch (error) {
+  //     console.error("Error deleting expense:", error);
+  //   }
+  // };
 
-  const filteredCollection = collection.filter((exp: any) => {
-    const matchesSearch =
-      exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
-      exp.amount.toString().includes(debouncedSearchText);
-    return matchesSearch;
-  });
+  // const filteredCollection = collection.filter((exp: any) => {
+  //   const matchesSearch =
+  //     exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
+  //     exp.amount.toString().includes(debouncedSearchText);
+  //   return matchesSearch;
+  // });
 
   const handleChange = (field: string, value: any) => {
     setCollectionDetails({
@@ -113,7 +120,7 @@ function Collection() {
           Add collection
         </Button>
       </div>
-      <div className="collection_list">
+      {/* <div className="collection_list">
         {filteredCollection.length === 0 && (
           <p>No collection name match your search.</p>
         )}
@@ -135,12 +142,12 @@ function Collection() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
       <Modal
         title="Add New Collection"
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={drawerOpen}
-        onOk={onCollectionAdd}
+        onOk={() => onCollectionAdd()}
         onCancel={onDrawerClose}
       >
         <label>Name</label>
