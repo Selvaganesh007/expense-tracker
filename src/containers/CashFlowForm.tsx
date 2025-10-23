@@ -36,7 +36,6 @@ interface ExpenseFormValues {
 
 const ExpenseForm: React.FC = () => {
   const { id } = useParams();
-  console.log(id);
 
   const { profileDetails } = useContext(AppContext);
   const [form] = Form.useForm();
@@ -89,7 +88,6 @@ const ExpenseForm: React.FC = () => {
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           Add Expense / Income
         </h2>
-
         <Form
           form={form}
           layout="vertical"
@@ -123,7 +121,6 @@ const ExpenseForm: React.FC = () => {
               ))}
             </Select>
           </Item>
-
           <Item
             label="Cash Flow Type"
             name="cashFlowType"
@@ -170,7 +167,6 @@ const ExpenseForm: React.FC = () => {
               parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
             />
           </Form.Item>
-
           <Item
             label="Date"
             name="date"

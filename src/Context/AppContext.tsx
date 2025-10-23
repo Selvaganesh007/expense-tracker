@@ -55,7 +55,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       // ✅ Decode directly to an object
       const decoded = jwtDecode<ProfileDetails>(userDetails);
       setProfileDetails(decoded);
-      console.log("Decoded JWT:", decoded);
+      // console.log("Decoded JWT:", decoded);
     }
 
     if (savedSettings) setSettings(JSON.parse(savedSettings));

@@ -41,7 +41,7 @@ function SignInContainer() {
               photoUrl: user.photoURL,
             });
           }
-          navigate("/home");
+          navigate("/dashboard");
         } else {
           console.log("No user signed in");
         }

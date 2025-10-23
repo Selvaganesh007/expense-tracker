@@ -17,10 +17,26 @@
     color: white;
     padding-left: 2rem;
   }
-  .profile_icon {
+  .navlinks {
+    width: 50%;
     display: flex;
+    justify-content: space-between;
+    .navitem {
+      display: flex;
+    }
+  }
+  .profile {
+    display: flex;
+    gap: 1rem;
     align-items: center;
     cursor: pointer;
     padding-right: 2rem;
+    .profile_name {
+      color: white;
+    }
+    .profile-photo {
+      width: 2rem;
+      border-radius: 50% 50%;
+    }
   }
 }

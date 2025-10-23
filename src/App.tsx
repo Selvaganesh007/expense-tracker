@@ -10,6 +10,7 @@ import History from "./Sections/History/History";
 import Settings from "./Sections/SettingsModule/Settings";
 import CashFlow from "./views/Auth/CashFlow/CashFlow";
 import CashFlowForm from "./containers/CashFlowForm";
+import Transaction from "./Sections/Transaction/Transaction";
 
 function App() {
   return (
@@ -17,19 +18,21 @@ function App() {
       <Routes>
         {/* Redirect root to sign-in */}
         <Route path="/" element={<Navigate to="/sign-in" replace />} />
-
         {/* Protected Base Layout */}
         <Route
-          path="/home"
+          path="/"
           element={
             <ProductedRoute>
               <Base />
             </ProductedRoute>
           }
         >
-          <Route index element={<Dashboard />} /> {/* /home */}
+          <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="collection" element={<Collection />} />
+          <Route path="collection" element={<Collection />}>
+            <Route index element={<Collection />} />
+            <Route path="transaction" element={<Transaction />} />
+          </Route>
           <Route path="cash-flow">
             <Route index element={<CashFlow />} />
             <Route path=":id" element={<CashFlowForm />} />

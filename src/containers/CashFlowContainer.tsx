@@ -62,7 +62,7 @@ function CashFlowContainer() {
               <Text>name - {item.name}</Text>
               <Button
                 type="primary"
-                onClick={() => navigate(`/home/cash-flow/${item.id}`)}
+                onClick={() => navigate(`/cash-flow/${item.id}`)}
               >
                 {" "}
                 Add Income / Expense

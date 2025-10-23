@@ -18,6 +18,7 @@ import {
   DB_COLLECTION_CONST,
   DB_COLLECTION_NAMES,
 } from "../../Constents/DB_COLLECTION_CONST";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Search } = Input;
 
@@ -32,6 +33,8 @@ export interface CollectionType {
 }
 
 function Collection() {
+  const navigate = useNavigate();
+
   const { profileDetails } = useContext(AppContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collectionDetails, setCollectionDetails] =
@@ -109,51 +112,39 @@ function Collection() {
     if (profileDetails.user_id) getCollectionList();
   }, [profileDetails.user_id]);
 
-  const columns = [
-    {
-      title: "Collection Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Created At",
-      dataIndex: "created_at",
-      key: "created_at",
-    },
-    {
-      title: "Updated At",
-      dataIndex: "updated_at",
-      key: "updated_at",
-    },
-  ];
-  console.log("collectionList", collectionList);
-
   return (
     <div className="collection">
       <div className="collection_header">
-        <div>
-          <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-            Collection List
-          </div>
-          <Search
-            placeholder="Search by collection name"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 200, marginRight: 16 }}
-          />
-          <Button type="primary" onClick={onAddClick}>
-            Add collection
-          </Button>
+        <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+          Collection List
         </div>
-        <div>
-          <Table
-            columns={columns}
-            dataSource={collectionList}
-            loading={false}
-            rowKey="id"
-            pagination={{ pageSize: 5 }}
-          />
-        </div>
+        <Search
+          placeholder="Search by collection name"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 200, marginRight: 16 }}
+        />
+        <Button type="primary" onClick={onAddClick}>
+          Add collection
+        </Button>
+      </div>
+      <div className="collection_list">
+        {
+          collectionList.map((value, id) => {
+            return <div key={id} className="collection_item" onClick={() => {navigate("/collection/transaction")}}>
+              <h4>{value.name}</h4>
+              <h4>Balance: 20,023</h4>
+              <div className="collection_item-action">
+                <Button type="primary" size={'small'} onClick={() => { }}>
+                  Edit
+                </Button>
+                <Button type="primary" size={'small'} onClick={() => { }} danger>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          })
+        }
       </div>
       <Modal
         title="Add New Collection"

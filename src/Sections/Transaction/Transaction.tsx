@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
-import "./Expense.scss";
+import "./Transaction.scss";
 import { Button, Input, Select } from "antd";
-import ExpenseDrawer from "./ExpenseDrawer";
 import dayjs from "dayjs";
 import { AppContext } from "../../Context/AppContext";
 
 const { Search } = Input;
 const { Option } = Select;
 
-const DEFAULT_EXPENSE = {
-  expenseID: 0,
+const DEFAULT_TRANSACTION = {
+  transactionID: 0,
   name: "",
   type: "",
   date: "",
@@ -18,7 +17,7 @@ const DEFAULT_EXPENSE = {
 };
 
 export interface ExpenseType {
-  expenseID: number;
+  transactionID: number;
   name: string;
   type: string;
   date: string;
@@ -26,13 +25,12 @@ export interface ExpenseType {
   amount: string;
 }
 
-function Expense() {
-  const { expenses, setExpenses, expenseTypes, setExpenseTypes, settings } =
+function Transaction() {
+  const { expenses, setExpenses, expenseTypes, settings } =
     useContext(AppContext);
-
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [expenseDetails, setExpenseDetails] =
-    useState<ExpenseType>(DEFAULT_EXPENSE);
+  const [transactionDetails, setTransactionDetails] =
+    useState<ExpenseType>(DEFAULT_TRANSACTION);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -48,14 +46,14 @@ function Expense() {
 
   const onDrawerClose = () => {
     setDrawerOpen(false);
-    setExpenseDetails(DEFAULT_EXPENSE);
+    setTransactionDetails(DEFAULT_TRANSACTION);
     return true;
   };
 
   const onAddClick = () => {
     const now = dayjs();
-    setExpenseDetails({
-      ...DEFAULT_EXPENSE,
+    setTransactionDetails({
+      ...DEFAULT_TRANSACTION,
       date: now.format("YYYY-MM-DD"),
       time: now.format("HH:mm"),
     });
@@ -63,15 +61,15 @@ function Expense() {
   };
 
   const onExpenseAdd = () => {
-    if (expenseDetails.expenseID) {
+    if (transactionDetails.transactionID) {
       const updated = expenses.map((exp: any) =>
-        exp.expenseID === expenseDetails.expenseID ? expenseDetails : exp
+        exp.transactionID === transactionDetails.transactionID ? transactionDetails : exp
       );
       setExpenses(updated);
     } else {
       const newExpense = {
-        ...expenseDetails,
-        expenseID: Date.now(),
+        ...transactionDetails,
+        transactionID: Date.now(),
       };
       setExpenses([...expenses, newExpense]);
     }
@@ -79,15 +77,15 @@ function Expense() {
   };
 
   const onEdit = (expense: any) => {
-    setExpenseDetails(expense);
+    setTransactionDetails(expense);
     setDrawerOpen(true);
   };
 
   const onDelete = (id: string) => {
-    setExpenses(expenses.filter((exp: any) => exp.expenseID !== id));
+    setExpenses(expenses.filter((exp: any) => exp.transactionID !== id));
   };
 
-  const filteredExpenses = expenses.filter((exp: any) => {
+  const filteredTransaction = expenses.filter((exp: any) => {
     const matchesSearch =
       exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
       exp.amount.toString().includes(debouncedSearchText);
@@ -100,16 +98,14 @@ function Expense() {
     <div className="expense">
       <div className="expense_header">
         <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-          Expenses List
+          Transactions List
         </div>
-
         <Search
           placeholder="Search by name or amount"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 200, marginRight: 16 }}
         />
-
         <Select
           placeholder="Filter by type"
           allowClear
@@ -123,18 +119,17 @@ function Expense() {
             </Option>
           ))}
         </Select>
-
-        <Button type="primary" onClick={onAddClick}>
-          Add expense
+        <Button type="primary" onClick={() => {}}>
+          Add Transaction
         </Button>
       </div>
 
       <div className="expense_list">
-        {filteredExpenses.length === 0 && (
-          <p>No expenses match your search/filter.</p>
+        {filteredTransaction.length === 0 && (
+          <p>Transaction doesn't match your search/filter.</p>
         )}
-        {filteredExpenses.map((exp: any) => (
-          <div key={exp.expenseID} className="expense_item">
+        {filteredTransaction.map((exp: any) => (
+          <div key={exp.transactionID} className="expense_item">
             <div>{exp.name}</div>
             <div>{exp.type}</div>
             <div>
@@ -150,7 +145,7 @@ function Expense() {
               <Button
                 type="primary"
                 danger
-                onClick={() => onDelete(exp.expenseID)}
+                onClick={() => onDelete(exp.transactionID)}
               >
                 Delete
               </Button>
@@ -158,18 +153,8 @@ function Expense() {
           </div>
         ))}
       </div>
-
-      <ExpenseDrawer
-        drawerOpen={drawerOpen}
-        onDrawerClose={onDrawerClose}
-        expenseDetails={expenseDetails}
-        setExpenseDetails={setExpenseDetails}
-        onExpenseAdd={onExpenseAdd}
-        expenseTypes={expenseTypes}
-        setExpenseTypes={setExpenseTypes}
-      />
     </div>
   );
 }
 
-export default Expense;
+export default Transaction;

@@ -1,4 +1,4 @@
-export const SIDEBAR_TABS_CONST: Record<string, string> = {
+export const NAVBAR_TABS_CONST: Record<string, string> = {
   dashboard: "Dashboard",
   collection: "Collection",
   history: "History",
