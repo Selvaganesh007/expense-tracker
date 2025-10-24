@@ -1,24 +1,20 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./Collection.scss";
-import { Button, Input, Modal, Table } from "antd";
+import { Button, Input, Modal } from "antd";
 import { AppContext } from "../../Context/AppContext";
 import {
   addDoc,
-  deleteDoc,
-  doc,
   getDocs,
   serverTimestamp,
-  updateDoc,
   collection,
   query,
   where,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
 import {
-  DB_COLLECTION_CONST,
   DB_COLLECTION_NAMES,
-} from "../../Constents/DB_COLLECTION_CONST";
-import { useLocation, useNavigate } from "react-router-dom";
+} from "../../Utils/DB_COLLECTION_CONST";
+import { useNavigate } from "react-router-dom";
 
 const { Search } = Input;
 
@@ -131,7 +127,7 @@ function Collection() {
       <div className="collection_list">
         {
           collectionList.map((value, id) => {
-            return <div key={id} className="collection_item" onClick={() => {navigate("/collection/transaction")}}>
+            return <div key={id} className="collection_item" onClick={() => {navigate(`/collection/${encodeURIComponent(value.name)}`)}}>
               <h4>{value.name}</h4>
               <h4>Balance: 20,023</h4>
               <div className="collection_item-action">

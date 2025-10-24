@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import {
   Form,
   Input,
@@ -11,7 +11,7 @@ import {
   message,
   InputNumber,
 } from "antd";
-import { typeOptions } from "../Constents/common";
+import { typeOptions } from "../Utils/common";
 import {
   addDoc,
   collection,
@@ -19,10 +19,10 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import dayjs, { Dayjs } from "dayjs";
-import { DB_COLLECTION_NAMES } from "../Constents/DB_COLLECTION_CONST";
+import { DB_COLLECTION_NAMES } from "../Utils/DB_COLLECTION_CONST";
 import { db } from "../../firebase";
 import { AppContext } from "../Context/AppContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const { Item } = Form;
 interface ExpenseFormValues {
@@ -34,20 +34,15 @@ interface ExpenseFormValues {
   time: Dayjs;
 }
 
-const ExpenseForm: React.FC = () => {
+const TransactionForm = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
-
   const { profileDetails } = useContext(AppContext);
   const [form] = Form.useForm();
 
   const handleSubmit = async (values: ExpenseFormValues) => {
-    const combinedDateTime = dayjs(values.date)
-      .hour(values.time.hour())
-      .minute(values.time.minute())
-      .second(0);
-
+    const combinedDateTime = dayjs(values.date).hour(values.time.hour()).minute(values.time.minute()).second(0);
     const firestoreTimestamp = Timestamp.fromDate(combinedDateTime.toDate());
-
     const payload = {
       name: values.name,
       type: values.type,
@@ -56,12 +51,13 @@ const ExpenseForm: React.FC = () => {
       datetime: firestoreTimestamp,
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
-      collection_id: id,
       user_id: profileDetails.user_id,
+      collection_name: id, 
     };
     console.log("Saved Data:", payload);
-    await addDoc(collection(db, DB_COLLECTION_NAMES.CASH_FLOW), payload);
+    await addDoc(collection(db, DB_COLLECTION_NAMES.TRANSACTION), payload);
     form.resetFields();
+    navigate(`/collection/${id}`)
   };
 
   const handleError = () => {
@@ -83,10 +79,9 @@ const ExpenseForm: React.FC = () => {
           borderRadius: 12,
           boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         }}
-        bodyStyle={{ padding: "1.5rem" }}
       >
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          Add Expense / Income
+          Add Transaction
         </h2>
         <Form
           form={form}
@@ -131,13 +126,13 @@ const ExpenseForm: React.FC = () => {
             <Radio.Group size="large" style={{ display: "flex", gap: "1rem" }}>
               <Radio.Button
                 value="expense"
-                style={{ flex: 1, textAlign: "center" }}
+                style={{ flex: 1, textAlign: "center", backgroundColor: "red", color: "white" }}
               >
                 Expense
               </Radio.Button>
               <Radio.Button
                 value="income"
-                style={{ flex: 1, textAlign: "center" }}
+                style={{ flex: 1, textAlign: "center", backgroundColor: "green", color: "white" }}
               >
                 Income
               </Radio.Button>
@@ -212,4 +207,4 @@ const ExpenseForm: React.FC = () => {
   );
 };
 
-export default ExpenseForm;
+export default TransactionForm;
