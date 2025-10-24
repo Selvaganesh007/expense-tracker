@@ -33,6 +33,7 @@ function App() {
           <Route path="collection" element={<Collection />} />
           <Route path="collection/:id" element={<Transaction />} />
           <Route path="collection/:id/new" element={<ExpenseForm />} />
+          <Route path="collection/:id/:id" element={<ExpenseForm />} />
           <Route path="cash-flow">
             <Route index element={<CashFlow />} />
             <Route path=":id" element={<CashFlowForm />} />

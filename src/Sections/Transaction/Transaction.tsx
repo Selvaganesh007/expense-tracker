@@ -131,7 +131,7 @@ function Transaction() {
               {currency} {exp.amount}
             </div>
             <div className="expense_item-action">
-              <Button type="primary" onClick={() => {}}>
+              <Button type="primary" onClick={() => navigate(`/collection/${id}/${exp.id}`)}>
                 Edit
               </Button>
               <Button
