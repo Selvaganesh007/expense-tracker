@@ -12,7 +12,7 @@ A simple yet powerful personal finance manager built with **React** and **Ant De
 ## ✨ Features
 
 ✅ **Add, edit, delete** expenses and income records  
-✅ **Unique 4-digit ID** for each record  
+✅ **Unique ID** for each record  
 ✅ **Search** by name, amount, or type  
 ✅ **Filter** by source (Expense/Income) and type  
 ✅ **Dashboard** with:
@@ -22,11 +22,10 @@ A simple yet powerful personal finance manager built with **React** and **Ant De
 ✅ **Manage categories** (add/remove expense and income types)  
 ✅ **Theme switch** (Light / Dark mode)  
 ✅ **Dynamic currency** (select from ₹, $, €, £, ¥)  
-✅ **Export** transactions to Excel by month and type  
-✅ **Import** data from JSON file  
+✅ **Export** transactions to Excel by month and type
 ✅ **Reset all data** with a single click  
-✅ Fully **responsive UI** — works on mobile, tablet, and desktop  
-✅ **LocalStorage** based — no server needed  
+✅ Fully **responsive UI** — works on mobile, tablet, and desktop
+✅ **Firebase** for data storage
 
 ---
 
@@ -37,7 +36,7 @@ A simple yet powerful personal finance manager built with **React** and **Ant De
 - **Chart.js** — Pie charts for expense breakdown
 - **Day.js** — Lightweight date utility
 - **Context API** — Global state for settings
-- **LocalStorage** — Persistent data storage
+- **Firebase** — data storage
 
 ---
 
