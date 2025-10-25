@@ -6,39 +6,80 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import dayjs from "dayjs";
 import { AppContext } from "../../Context/AppContext";
+import { Select } from "antd";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "../../../firebase";
+import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Dashboard() {
-  const { settings } = useContext(AppContext);
+  const { settings, profileDetails } = useContext(AppContext);
   const currency = settings.currency || "₹";
 
-  const [expenses, setExpenses] = useState([]);
-  const [income, setIncome] = useState([]);
+  const [collections, setCollections] = useState<any[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const exp = JSON.parse(localStorage.getItem("expenses") as string) || [];
-    const inc = JSON.parse(localStorage.getItem("income") as string) || [];
-    setExpenses(exp);
-    setIncome(inc);
-  }, []);
+    if (!profileDetails.user_id) return;
 
-  const currentMonth = dayjs().format("YYYY-MM");
-  const monthlyExpenses = expenses.filter((exp: any) =>
-    exp.date.startsWith(currentMonth)
-  );
-  const monthlyIncome = income.filter((inc: any) =>
-    inc.date.startsWith(currentMonth)
-  );
+    const fetchCollections = async () => {
+      setLoading(true);
+      const colRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
+      const q = query(colRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
 
-  const totalSpending = monthlyExpenses.reduce(
-    (sum, exp: any) => sum + Number(exp.amount),
-    0
-  );
-  const totalIncome = monthlyIncome.reduce(
-    (sum, inc: any) => sum + Number(inc.amount),
-    0
-  );
+      const list = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setCollections(list);
+      if (list.length > 0) {
+        setSelectedCollection(list[0].id); // pick recent one
+      }
+      setLoading(false);
+    };
+
+    fetchCollections();
+  }, [profileDetails.user_id]);
+
+  useEffect(() => {
+    if (!selectedCollection) return;
+
+    const fetchTransactions = async () => {
+      setLoading(true);
+      const txRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
+      const q = query(txRef, where("collection_id", "==", selectedCollection));
+      const snapshot = await getDocs(q);
+
+      const list = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setTransactions(list);
+      setLoading(false);
+    };
+
+    fetchTransactions();
+  }, [selectedCollection]);
+
+  const expenses = transactions.filter((t: any) => t.cashFlowType === "expense");
+  const income = transactions.filter((t: any) => t.cashFlowType === "income");
+
+  const totalSpending = expenses.reduce((sum, t: any) => sum + Number(t.amount || 0), 0);
+  const totalIncome = income.reduce((sum, t: any) => sum + Number(t.amount || 0), 0);
+  const balance = totalIncome - totalSpending;
 
   const expenseByType = expenses.reduce((acc: any, exp: any) => {
     acc[exp.type] = (acc[exp.type] || 0) + Number(exp.amount);
@@ -52,15 +93,8 @@ function Dashboard() {
         label: "Expenses",
         data: Object.values(expenseByType),
         backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-          "#C9CBCF",
-          "#00FF99",
-          "#FF66FF",
+          "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+          "#9966FF", "#FF9F40", "#C9CBCF", "#00FF99", "#FF66FF",
         ],
         borderColor: "#fff",
         borderWidth: 1,
@@ -68,10 +102,7 @@ function Dashboard() {
     ],
   };
 
-  const allTransactions = [
-    ...expenses.map((e: any) => ({ ...e, type: "Expense" })),
-    ...income.map((i: any) => ({ ...i, type: "Income" })),
-  ]
+  const allTransactions = [...transactions]
     .sort((a, b) => {
       const dateTimeA: any = dayjs(`${a.date} ${a.time}`);
       const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
@@ -79,15 +110,35 @@ function Dashboard() {
     })
     .slice(0, 10);
 
+  if (loading) {
+    return <div className="dashboard"><p>Loading dashboard...</p></div>;
+  }
+
   return (
     <div className="dashboard">
       <div className="dashboard_amount glass-card">
         <div className="total_amount">
-          <h3>
-            {currency}
-            {(totalIncome - totalSpending).toFixed(2)}
-          </h3>
-          <p>Total balance amount</p>
+          <div>
+            <h3>
+              {currency}
+              {(totalIncome - totalSpending).toFixed(2)}
+            </h3>
+            <p>Total balance amount</p>
+          </div>
+          <div>
+            <Select
+              style={{ width: 250, marginTop: 8 }}
+              value={selectedCollection || undefined}
+              onChange={(val) => setSelectedCollection(val)}
+              placeholder="Select Collection"
+            >
+              {collections.map((c) => (
+                <Select.Option key={c.id} value={c.id}>
+                  {c.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
         </div>
         <div className="Transactions">
           <div className="Transactions_sections glass-card">

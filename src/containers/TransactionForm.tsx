@@ -11,7 +11,7 @@ import {
   message,
   InputNumber,
 } from "antd";
-import { typeOptions } from "../Utils/common";
+import { expenseTypeOptions, incomeTypeOptions } from "../Utils/common";
 import {
   addDoc,
   collection,
@@ -40,20 +40,18 @@ interface ExpenseFormValues {
 const TransactionForm = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-
   const { id, mode } = useParams();
   const { profileDetails } = useContext(AppContext);
   const [docId, setDocId] = useState<string>("");
+  const [selectedCashFlow, setSelectedCashFlow] = useState<string | null>(null);
   const [form] = Form.useForm();
   const isNew = mode === "new";
-  console.log("id", id, mode);
 
   const getExpenseById = async (transactionId: string) => {
     try {
       const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, transactionId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
         const data = docSnap.data();
         const dateValue = dayjs(data.datetime.toDate());
         const timeValue = dayjs(data.datetime.toDate());
@@ -98,7 +96,6 @@ const TransactionForm = () => {
     };
     try {
       if (isNew) {
-        console.log("Saved Data:", payload);
         await addDoc(collection(db, DB_COLLECTION_NAMES.TRANSACTION), payload);
       } else {
         const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, docId);
@@ -112,7 +109,7 @@ const TransactionForm = () => {
       );
     } catch (err) {
       messageApi.error(`Failed to ${isNew ? "add" : "edit"} the transaction. `);
-      console.log("transaction form err:", err);
+      console.error("transaction form err:", err);
       return err;
     }
   };
@@ -151,6 +148,10 @@ const TransactionForm = () => {
           onFinish={handleSubmit}
           onFinishFailed={handleError}
           autoComplete="off"
+          initialValues={{
+            date: isNew ? dayjs() : undefined,
+            time: isNew ? dayjs() : undefined,
+          }}
         >
           <Item
             label="Name"
@@ -159,44 +160,21 @@ const TransactionForm = () => {
           >
             <Input placeholder="Enter name" size="large" />
           </Item>
-          <Item
-            label="Type"
-            name="type"
-            rules={[{ required: true, message: "Please select a type" }]}
-          >
-            <Select
-              placeholder="Select type"
-              size="large"
-              allowClear
-              showSearch
-              optionFilterProp="children"
-            >
-              {typeOptions.map((item) => (
-                <Select.Option key={item.value} value={item.value}>
-                  {item.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Item>
-          <Item
+          {/* Cash Flow Type — moved above Type */}
+          <Form.Item
             label="Cash Flow Type"
             name="cashFlowType"
-            rules={[
-              { required: true, message: "Please select cash flow type" },
-            ]}
+            rules={[{ required: true, message: "Please select cash flow type" }]}
           >
-            <Radio.Group size="large" style={{ display: "flex", gap: "1rem" }}>
-              <Radio.Button
-                value="expense"
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  backgroundColor: "red",
-                  color: "white",
-                }}
-              >
-                Expense
-              </Radio.Button>
+            <Radio.Group
+              size="large"
+              style={{ display: "flex", gap: "1rem" }}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedCashFlow(value);
+                form.setFieldValue("type", undefined); // clear previous type selection
+              }}
+            >
               <Radio.Button
                 value="income"
                 style={{
@@ -208,8 +186,50 @@ const TransactionForm = () => {
               >
                 Income
               </Radio.Button>
+              <Radio.Button
+                value="expense"
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  backgroundColor: "red",
+                  color: "white",
+                }}
+              >
+                Expense
+              </Radio.Button>
             </Radio.Group>
-          </Item>
+          </Form.Item>
+
+          {/* Type — depends on cashFlowType */}
+          <Form.Item
+            label="Type"
+            name="type"
+            rules={[{ required: true, message: "Please select a type" }]}
+          >
+            <Select
+              placeholder={
+                selectedCashFlow
+                  ? "Select type"
+                  : "Select cash flow type first"
+              }
+              size="large"
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              disabled={!selectedCashFlow} // disable until income/expense is chosen
+            >
+              {(selectedCashFlow === "income"
+                ? incomeTypeOptions
+                : selectedCashFlow === "expense"
+                  ? expenseTypeOptions
+                  : []
+              ).map((item) => (
+                <Select.Option key={item.value} value={item.value}>
+                  {item.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
           <Form.Item
             label="Amount"
             name="amount"

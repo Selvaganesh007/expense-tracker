@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./Transaction.scss";
 import { Button, Input, Select } from "antd";
-import dayjs from "dayjs";
 import { AppContext } from "../../Context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { db } from "../../../firebase";
 import {
   collection,
+  deleteDoc,
+  doc,
   documentId,
   getDocs,
   query,
@@ -33,9 +34,11 @@ function Transaction() {
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>(
-    []
-  );
+  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [incomeTotal, setIncomeTotal] = useState(0);
+  const [expenseTotal, setExpenseTotal] = useState(0);
+
 
   const currency = settings.currency || "₹";
 
@@ -49,7 +52,19 @@ function Transaction() {
     }, 300);
     return () => clearTimeout(handler);
   }, [searchText]);
-  console.log(" id", id);
+
+  useEffect(() => {
+    const income = transactionList
+      .filter((t) => t.cashFlowType === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const expense = transactionList
+      .filter((t) => t.cashFlowType === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    setIncomeTotal(income);
+    setExpenseTotal(expense);
+  }, [transactionList]);
+
 
   const getTransactionList = async () => {
     const usersRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
@@ -78,12 +93,35 @@ function Transaction() {
         updated_at: updatedAt,
       };
     });
+    const income = result
+      .filter((t) => t.cashFlowType === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const expense = result
+      .filter((t) => t.cashFlowType === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    setIncomeTotal(income);
+    setExpenseTotal(expense);
     setTransactionList(result);
   };
 
-  const onEdit = () => {};
+  const onDelete = async (transactionId: string) => {
+    if (window.confirm("Are you sure you want to delete this transaction?")) {
+      setDeletingId(transactionId);
+      try {
+        const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, transactionId);
+        await deleteDoc(docRef);
+        setTransactionList((prev) =>
+          prev.filter((t) => t.id !== transactionId)
+        );
+      } catch (error) {
+        console.error("Error deleting:", error);
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
-  const onDelete = () => {};
 
   const filteredTransaction = transactionList.filter((exp: any) => {
     const matchesSearch =
@@ -129,16 +167,18 @@ function Transaction() {
         </Button>
       </div>
       <div className="collection_balance">
-        <div className="balance_IN">Total Income: ₹ 62,193</div>
-        <div className="balance_OUT">Total expense: ₹ 60,193</div>
-        <div className="balance_amount">Balance: ₹ 2,000</div>
+        <div className="balance_IN">Total Income: {currency} {incomeTotal.toLocaleString()}</div>
+        <div className="balance_OUT">Total Expense: {currency} {expenseTotal.toLocaleString()}</div>
+        <div className="balance_amount">
+          Balance: {currency} {(incomeTotal - expenseTotal).toLocaleString()}
+        </div>
       </div>
       <div className="expense_list">
         {filteredTransaction.length === 0 && (
           <p>Transaction doesn't match your search/filter.</p>
         )}
         {filteredTransaction.map((exp: any) => (
-          <div key={exp.transactionID} className="expense_item">
+          <div key={exp.id} className="expense_item">
             <div>{exp.name}</div>
             <div>{exp.type}</div>
             <div>
@@ -154,7 +194,7 @@ function Transaction() {
               >
                 Edit
               </Button>
-              <Button type="primary" danger onClick={() => {}}>
+              <Button type="primary" danger loading={deletingId === exp.id} onClick={() => onDelete(exp.id)}>
                 Delete
               </Button>
             </div>

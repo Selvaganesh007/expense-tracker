@@ -21,6 +21,8 @@
     flex-direction: column;
 
     .total_amount {
+      display: flex;
+      justify-content: space-between;
       h3 {
         font-size: 3rem;
         font-weight: 900;

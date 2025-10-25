@@ -1,11 +1,13 @@
-export const typeOptions = [
-  { label: "Rent", value: "rent" },
+export const expenseTypeOptions = [
   { label: "Food", value: "food" },
-  { label: "Movie", value: "movie" },
-  { label: "Outing", value: "outing" },
-  { label: "Petrol", value: "petrol" },
-  { label: "Debt", value: "debt" },
-  { label: "Others", value: "others" },
+  { label: "Rent", value: "rent" },
+  { label: "Bills", value: "bills" },
+];
+
+export const incomeTypeOptions = [
+  { label: "Salary", value: "salary" },
+  { label: "Freelance", value: "freelance" },
+  { label: "Investment", value: "investment" },
 ];
 
 export const settings: { expense: string[]; income: string[] } = {
