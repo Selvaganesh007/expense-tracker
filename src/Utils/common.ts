@@ -7,3 +7,17 @@ export const typeOptions = [
   { label: "Debt", value: "debt" },
   { label: "Others", value: "others" },
 ];
+
+export const settings: { expense: string[]; income: string[] } = {
+  expense: ["Salary", "Freelance", "Bonus", "Investment", "Interest", "Other"],
+  income: [
+    "Rent",
+    "Bill",
+    "Food",
+    "Clothes",
+    "Bike",
+    "Fuel",
+    "Shopping",
+    "Savings",
+  ],
+};

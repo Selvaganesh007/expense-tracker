@@ -10,6 +10,7 @@ import History from "./Sections/History/History";
 import Settings from "./Sections/SettingsModule/Settings";
 import Transaction from "./Sections/Transaction/Transaction";
 import ExpenseForm from "./containers/TransactionForm";
+import Logout from "./views/Auth/log-out/Logout";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="collection/:id/:mode" element={<ExpenseForm />} />
           <Route path="history" element={<History />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="log-out" element={<Logout />} />
         </Route>
 
         {/* Auth Routes */}

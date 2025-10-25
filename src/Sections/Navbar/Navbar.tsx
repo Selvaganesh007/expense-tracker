@@ -34,6 +34,16 @@ const NAVBAR_ITEMS = [
     icon: <MdOutlineSettings />,
     route: "/settings",
   },
+  {
+    name: NAVBAR_TABS_CONST.Settings,
+    icon: <MdOutlineSettings />,
+    route: "/settings",
+  },
+  {
+    name: NAVBAR_TABS_CONST.logout,
+    icon: <MdOutlineSettings />,
+    route: "/log-out",
+  },
 ];
 
 function Navbar() {
@@ -43,10 +53,7 @@ function Navbar() {
       <div className="app_name">Expense Tracker</div>
       <div className="navlinks">
         {NAVBAR_ITEMS.map((tab) => (
-          <NavLink
-            key={tab.name}
-            to={tab.route}
-          >
+          <NavLink key={tab.name} to={tab.route}>
             <div className="navitem">
               <div className="tab_name">{tab.name}</div>
             </div>
@@ -56,7 +63,11 @@ function Navbar() {
       {/* <NavLink to={"/sign-up"}>Logout</NavLink> */}
       <div className="profile">
         <h5 className="profile_name">{profileDetails?.name}</h5>
-        <img className="profile-photo" src={profileDetails?.picture} alt={"Profile picture"} />
+        <img
+          className="profile-photo"
+          src={profileDetails?.picture}
+          alt={"Profile picture"}
+        />
       </div>
     </div>
   );
