@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { DB_COLLECTION_NAMES } from "../Constents/DB_COLLECTION_CONST";
+import { DB_COLLECTION_NAMES } from "../Utils/DB_COLLECTION_CONST";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AppContext } from "../Context/AppContext";

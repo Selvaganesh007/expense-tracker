@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -11,18 +11,21 @@ import {
   message,
   InputNumber,
 } from "antd";
-import { typeOptions } from "../Constents/common";
+import { typeOptions } from "../Utils/common";
 import {
   addDoc,
   collection,
+  doc,
+  getDoc,
   serverTimestamp,
   Timestamp,
+  updateDoc,
 } from "firebase/firestore";
 import dayjs, { Dayjs } from "dayjs";
-import { DB_COLLECTION_NAMES } from "../Constents/DB_COLLECTION_CONST";
+import { DB_COLLECTION_NAMES } from "../Utils/DB_COLLECTION_CONST";
 import { db } from "../../firebase";
 import { AppContext } from "../Context/AppContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const { Item } = Form;
 interface ExpenseFormValues {
@@ -34,39 +37,93 @@ interface ExpenseFormValues {
   time: Dayjs;
 }
 
-const ExpenseForm: React.FC = () => {
-  const { id } = useParams();
+const TransactionForm = () => {
+  const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
 
+  const { id, mode } = useParams();
   const { profileDetails } = useContext(AppContext);
+  const [docId, setDocId] = useState<string>("");
   const [form] = Form.useForm();
+  const isNew = mode === "new";
+  console.log("id", id, mode);
+
+  const getExpenseById = async (transactionId: string) => {
+    try {
+      const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, transactionId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        const data = docSnap.data();
+        const dateValue = dayjs(data.datetime.toDate());
+        const timeValue = dayjs(data.datetime.toDate());
+        form.setFieldsValue({
+          name: data.name,
+          type: data.type,
+          cashFlowType: data.cashFlowType,
+          amount: data.amount,
+          date: dateValue,
+          time: timeValue,
+        });
+        setDocId(docSnap.id);
+        return { id: docSnap.id, ...docSnap.data() };
+      } else {
+        console.log("No such document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+      throw error;
+    }
+  };
 
   const handleSubmit = async (values: ExpenseFormValues) => {
     const combinedDateTime = dayjs(values.date)
       .hour(values.time.hour())
       .minute(values.time.minute())
       .second(0);
-
     const firestoreTimestamp = Timestamp.fromDate(combinedDateTime.toDate());
-
     const payload = {
       name: values.name,
       type: values.type,
       cashFlowType: values.cashFlowType,
       amount: values.amount,
       datetime: firestoreTimestamp,
-      created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
-      collection_id: id,
-      user_id: profileDetails.user_id,
+      ...(isNew && {
+        created_at: serverTimestamp(),
+        user_id: profileDetails.user_id,
+        collection_id: id,
+      }),
     };
-    console.log("Saved Data:", payload);
-    await addDoc(collection(db, DB_COLLECTION_NAMES.CASH_FLOW), payload);
-    form.resetFields();
+    try {
+      if (isNew) {
+        console.log("Saved Data:", payload);
+        await addDoc(collection(db, DB_COLLECTION_NAMES.TRANSACTION), payload);
+      } else {
+        const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, docId);
+        await updateDoc(docRef, payload);
+      }
+      setDocId("");
+      form.resetFields();
+      navigate(`/collection/${id}`);
+      messageApi.success(
+        `Transaction ${isNew ? "added" : "edited"}  successfully`
+      );
+    } catch (err) {
+      messageApi.error(`Failed to ${isNew ? "add" : "edit"} the transaction. `);
+      console.log("transaction form err:", err);
+      return err;
+    }
   };
 
   const handleError = () => {
-    message.error("Please fill all required fields correctly.");
+    messageApi.error("Please fill all required fields correctly.");
   };
+
+  useEffect(() => {
+    if (!isNew) getExpenseById(mode as string);
+  }, [isNew]);
 
   return (
     <div
@@ -76,6 +133,7 @@ const ExpenseForm: React.FC = () => {
         padding: "1rem",
       }}
     >
+      {contextHolder}
       <Card
         style={{
           width: "100%",
@@ -83,10 +141,9 @@ const ExpenseForm: React.FC = () => {
           borderRadius: 12,
           boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         }}
-        bodyStyle={{ padding: "1.5rem" }}
       >
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          Add Expense / Income
+          Add Transaction
         </h2>
         <Form
           form={form}
@@ -131,13 +188,23 @@ const ExpenseForm: React.FC = () => {
             <Radio.Group size="large" style={{ display: "flex", gap: "1rem" }}>
               <Radio.Button
                 value="expense"
-                style={{ flex: 1, textAlign: "center" }}
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  backgroundColor: "red",
+                  color: "white",
+                }}
               >
                 Expense
               </Radio.Button>
               <Radio.Button
                 value="income"
-                style={{ flex: 1, textAlign: "center" }}
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  backgroundColor: "green",
+                  color: "white",
+                }}
               >
                 Income
               </Radio.Button>
@@ -212,4 +279,4 @@ const ExpenseForm: React.FC = () => {
   );
 };
 
-export default ExpenseForm;
+export default TransactionForm;

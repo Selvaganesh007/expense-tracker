@@ -2,7 +2,7 @@ import "./Navbar.scss";
 import { MdOutlineDashboard, MdOutlineSettings } from "react-icons/md";
 import { HiCollection } from "react-icons/hi";
 import { FaHistory } from "react-icons/fa";
-import { NAVBAR_TABS_CONST } from "../../Constents/NAVBAR_TABS_CONST";
+import { NAVBAR_TABS_CONST } from "../../Utils/NAVBAR_TABS_CONST";
 import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
@@ -19,11 +19,11 @@ const NAVBAR_ITEMS = [
     icon: <HiCollection />,
     route: "/collection",
   },
-  {
-    name: NAVBAR_TABS_CONST.cash_flow,
-    icon: <MdOutlineDashboard />,
-    route: "/cash-flow",
-  },
+  // {
+  //   name: NAVBAR_TABS_CONST.cash_flow,
+  //   icon: <MdOutlineDashboard />,
+  //   route: "/cash-flow",
+  // },
   {
     name: NAVBAR_TABS_CONST.history,
     icon: <FaHistory />,
@@ -48,13 +48,12 @@ function Navbar() {
             to={tab.route}
           >
             <div className="navitem">
-              <div className="tab_icon">{tab.icon}</div>
               <div className="tab_name">{tab.name}</div>
             </div>
           </NavLink>
         ))}
       </div>
-      <NavLink to={"/sign-up"}><CiLogout /> Logout</NavLink>
+      {/* <NavLink to={"/sign-up"}>Logout</NavLink> */}
       <div className="profile">
         <h5 className="profile_name">{profileDetails?.name}</h5>
         <img className="profile-photo" src={profileDetails?.picture} alt={"Profile picture"} />

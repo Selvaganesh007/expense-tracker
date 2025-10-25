@@ -8,9 +8,8 @@ import Collection from "./Sections/Collection/Collection";
 import Dashboard from "./Sections/Dashboard/Dashboard";
 import History from "./Sections/History/History";
 import Settings from "./Sections/SettingsModule/Settings";
-import CashFlow from "./views/Auth/CashFlow/CashFlow";
-import CashFlowForm from "./containers/CashFlowForm";
 import Transaction from "./Sections/Transaction/Transaction";
+import ExpenseForm from "./containers/TransactionForm";
 
 function App() {
   return (
@@ -29,14 +28,9 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="collection" element={<Collection />}>
-            <Route index element={<Collection />} />
-            <Route path="transaction" element={<Transaction />} />
-          </Route>
-          <Route path="cash-flow">
-            <Route index element={<CashFlow />} />
-            <Route path=":id" element={<CashFlowForm />} />
-          </Route>
+          <Route path="collection" element={<Collection />} />
+          <Route path="collection/:id" element={<Transaction />} />
+          <Route path="collection/:id/:mode" element={<ExpenseForm />} />
           <Route path="history" element={<History />} />
           <Route path="settings" element={<Settings />} />
         </Route>
