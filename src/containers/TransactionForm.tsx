@@ -11,7 +11,7 @@ import {
   message,
   InputNumber,
 } from "antd";
-import { expenseTypeOptions, incomeTypeOptions } from "../Utils/common";
+import { expenseTypeOptions, incomeTypeOptions, transactionModeOptions } from "../Utils/common";
 import {
   addDoc,
   collection,
@@ -32,6 +32,7 @@ interface ExpenseFormValues {
   name: string;
   type: string;
   cashFlowType: "income" | "expense";
+  transactionMode: String,
   amount: number;
   date: Dayjs;
   time: Dayjs;
@@ -59,6 +60,7 @@ const TransactionForm = () => {
           name: data.name,
           type: data.type,
           cashFlowType: data.cashFlowType,
+          transactionMode: data.transactionMode,
           amount: data.amount,
           date: dateValue,
           time: timeValue,
@@ -85,6 +87,7 @@ const TransactionForm = () => {
       name: values.name,
       type: values.type,
       cashFlowType: values.cashFlowType,
+      transactionMode: values.transactionMode,
       amount: values.amount,
       datetime: firestoreTimestamp,
       updated_at: serverTimestamp(),
@@ -199,8 +202,6 @@ const TransactionForm = () => {
               </Radio.Button>
             </Radio.Group>
           </Form.Item>
-
-          {/* Type — depends on cashFlowType */}
           <Form.Item
             label="Type"
             name="type"
@@ -224,6 +225,24 @@ const TransactionForm = () => {
                   ? expenseTypeOptions
                   : []
               ).map((item) => (
+                <Select.Option key={item.value} value={item.value}>
+                  {item.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="Transaction Mode"
+            name="transactionMode"
+          >
+            <Select
+              placeholder={"Select Transaction mode"}
+              size="large"
+              allowClear
+              showSearch
+              optionFilterProp="children"
+            >
+              {(transactionModeOptions || []).map((item) => (
                 <Select.Option key={item.value} value={item.value}>
                   {item.label}
                 </Select.Option>

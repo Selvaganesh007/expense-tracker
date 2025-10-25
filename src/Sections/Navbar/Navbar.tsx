@@ -35,11 +35,6 @@ const NAVBAR_ITEMS = [
     route: "/settings",
   },
   {
-    name: NAVBAR_TABS_CONST.Settings,
-    icon: <MdOutlineSettings />,
-    route: "/settings",
-  },
-  {
     name: NAVBAR_TABS_CONST.logout,
     icon: <MdOutlineSettings />,
     route: "/log-out",
