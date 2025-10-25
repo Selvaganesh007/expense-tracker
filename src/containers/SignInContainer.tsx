@@ -11,12 +11,23 @@ import {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
+  updateProfile,
+  User,
 } from "firebase/auth";
 import { auth, db, provider } from "../../firebase";
 import { useLocation, useNavigate } from "react-router-dom";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
+import { settings } from "../Utils/common";
 
 interface SignInForm {
+  fullName?: string;
   email: string;
   password: string;
 }
@@ -25,6 +36,8 @@ function SignInContainer() {
   const navigate = useNavigate();
   const location = useLocation();
   const isSignInPage = location.pathname.includes("sign-in");
+  const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
 
   async function getUserByUserId(userId: string) {
     const usersRef = collection(db, "users");
@@ -40,19 +53,23 @@ function SignInContainer() {
     }
   }
 
-  const handleAddUsers = async (user: any) => {
+  const handleAddUsers = async (user: User, fullName?: string) => {
     const firebaseToken = await user.getIdToken();
     localStorage.setItem("firebaseToken", firebaseToken);
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const res = await getUserByUserId(user.uid);
         if (!res) {
-          await addDoc(collection(db, "users"), {
-            name: user.displayName,
-            user_id: user.uid,
-            email: user.email,
-            photoUrl: user.photoURL,
+          const data = await addDoc(collection(db, "users"), {
+            name: user.displayName || fullName || "N/A",
+            user_id: user?.uid,
+            email: user?.email,
+            photoUrl: user?.photoURL ?? "N/A",
+            settings: settings,
+            created_at: serverTimestamp(),
+            updated_at: serverTimestamp(),
           });
+          console.log("user data", data);
         }
       } else {
         console.log("No user signed in");
@@ -72,12 +89,15 @@ function SignInContainer() {
   };
 
   const navigateSignUp = () => {
-    location.pathname.includes("sign-in")
-      ? navigate("/sign-up")
-      : navigate("/sign-in");
+    form.resetFields();
+    if (isSignInPage) {
+      navigate("/sign-up");
+    } else {
+      navigate("/sign-in");
+    }
   };
 
-  const handleSignUp = async (val: { email: string; password: string }) => {
+  const handleSignUp = async (val: SignInForm) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -85,15 +105,14 @@ function SignInContainer() {
         val.password
       );
       const user = userCredential.user;
-      await handleAddUsers(user);
+      await updateProfile(user, { displayName: val?.fullName });
+      await handleAddUsers(user, val?.fullName);
       if (user) {
         await sendEmailVerification(user);
-        message.success(
-          "Account created successfully! Please check your inbox for verification email."
+        messageApi.success(
+          "Account created successfully! Please check your inbox/spam for verification email."
         );
       }
-      console.log("User created:", user);
-      message.success("Account created successfully!");
     } catch (error: any) {
       console.error("Sign-up error:", error.message);
     }
@@ -109,11 +128,13 @@ function SignInContainer() {
       const user = userCredential.user;
       console.log("Signed in:", user);
       if (!user.emailVerified) {
-        message.warning("Please verify your email before signing in.");
-        localStorage.clear();
-        await auth.signOut();
-        return;
+        messageApi.warning(
+          "Please verify your email before signing in. Check you inbox/spam folder for verification mail."
+        );
+        return false;
       }
+      const firebaseToken = await user.getIdToken();
+      localStorage.setItem("firebaseToken", firebaseToken);
       navigate("/dashboard");
       return user;
     } catch (error: any) {
@@ -126,7 +147,6 @@ function SignInContainer() {
       if (isSignInPage) {
         const result = await handleSignIn(values);
         console.log("result", result);
-        message.success("Signed in successfully!");
       } else {
         const result = await handleSignUp(values);
         console.log("result", result);
@@ -137,12 +157,33 @@ function SignInContainer() {
     }
   };
 
+  const handleError = () => {
+    messageApi.error("Please fill all required fields correctly.");
+  };
+
   return (
     <PageContainer>
+      {contextHolder}
       <AuthCard
         title={location.pathname.includes("sign-in") ? "Sign In" : "Sign Up"}
       >
-        <Form layout="vertical" onFinish={onFinish}>
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          form={form}
+          onFinishFailed={handleError}
+        >
+          {!isSignInPage && (
+            <Form.Item
+              label="Full Name"
+              name="fullName"
+              rules={[
+                { required: true, message: "Please enter your full name" },
+              ]}
+            >
+              <Input placeholder="Full name" />
+            </Form.Item>
+          )}
           <Form.Item
             label="Email"
             name="email"

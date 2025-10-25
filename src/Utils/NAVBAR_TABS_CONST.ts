@@ -4,5 +4,6 @@ export const NAVBAR_TABS_CONST: Record<string, string> = {
   history: "History",
   cash_flow: "Cash Flow",
   Settings: "Settings",
+  logout: "Logout",
   signin: "sign-in",
 };
