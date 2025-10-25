@@ -6,7 +6,13 @@ import { AppContext } from "../../Context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { db } from "../../../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  documentId,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -23,12 +29,13 @@ function Transaction() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { profileDetails } = useContext(AppContext);
-  const { expenseTypes, settings } =
-    useContext(AppContext);
+  const { expenseTypes, settings } = useContext(AppContext);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [filterType, setFilterType] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
+  const [transactionList, setTransactionList] = useState<Record<string, any>[]>(
+    []
+  );
 
   const currency = settings.currency || "₹";
 
@@ -42,10 +49,15 @@ function Transaction() {
     }, 300);
     return () => clearTimeout(handler);
   }, [searchText]);
+  console.log(" id", id);
 
   const getTransactionList = async () => {
     const usersRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
-    const q = query(usersRef, where("user_id", "==", profileDetails.user_id), where("collection_name", "==", id));
+    const q = query(
+      usersRef,
+      where("user_id", "==", profileDetails.user_id),
+      where("collection_id", "==", id)
+    );
     const querySnapshot = await getDocs(q);
     const result = querySnapshot.docs.map((doc) => {
       const d = doc.data();
@@ -69,9 +81,9 @@ function Transaction() {
     setTransactionList(result);
   };
 
-  const onEdit = () => { };
+  const onEdit = () => {};
 
-  const onDelete = () => { };
+  const onDelete = () => {};
 
   const filteredTransaction = transactionList.filter((exp: any) => {
     const matchesSearch =
@@ -107,7 +119,12 @@ function Transaction() {
             </Option>
           ))}
         </Select>
-        <Button type="primary" onClick={() => { navigate(`/collection/${id}/new`) }}>
+        <Button
+          type="primary"
+          onClick={() => {
+            navigate(`/collection/${id}/new`);
+          }}
+        >
           Add Transaction
         </Button>
       </div>
@@ -131,14 +148,13 @@ function Transaction() {
               {currency} {exp.amount}
             </div>
             <div className="expense_item-action">
-              <Button type="primary" onClick={() => navigate(`/collection/${id}/${exp.id}`)}>
-                Edit
-              </Button>
               <Button
                 type="primary"
-                danger
-                onClick={() => {}}
+                onClick={() => navigate(`/collection/${id}/${exp.id}`)}
               >
+                Edit
+              </Button>
+              <Button type="primary" danger onClick={() => {}}>
                 Delete
               </Button>
             </div>

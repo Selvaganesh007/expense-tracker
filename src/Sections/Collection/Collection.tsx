@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import "./Collection.scss";
 import { Button, Input, Modal } from "antd";
 import { AppContext } from "../../Context/AppContext";
@@ -11,9 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../../firebase";
-import {
-  DB_COLLECTION_NAMES,
-} from "../../Utils/DB_COLLECTION_CONST";
+import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { useNavigate } from "react-router-dom";
 
 const { Search } = Input;
@@ -30,7 +28,6 @@ export interface CollectionType {
 
 function Collection() {
   const navigate = useNavigate();
-
   const { profileDetails } = useContext(AppContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collectionDetails, setCollectionDetails] =
@@ -125,22 +122,34 @@ function Collection() {
         </Button>
       </div>
       <div className="collection_list">
-        {
-          collectionList.map((value, id) => {
-            return <div key={id} className="collection_item" onClick={() => {navigate(`/collection/${encodeURIComponent(value.name)}`)}}>
+        {collectionList.map((value, id) => {
+          return (
+            <div
+              key={id}
+              className="collection_item"
+              onClick={() => {
+                navigate(`/collection/${encodeURIComponent(value.id)}`);
+              }}
+            >
               <h4>{value.name}</h4>
               <h4>Balance: 20,023</h4>
               <div className="collection_item-action">
-                <Button type="primary" size={'small'} onClick={() => { }}>
+                <Button
+                  type="primary"
+                  size={"small"}
+                  onClick={() => {
+                    console.log("value", value);
+                  }}
+                >
                   Edit
                 </Button>
-                <Button type="primary" size={'small'} onClick={() => { }} danger>
+                <Button type="primary" size={"small"} onClick={() => {}} danger>
                   Delete
                 </Button>
               </div>
             </div>
-          })
-        }
+          );
+        })}
       </div>
       <Modal
         title="Add New Collection"
