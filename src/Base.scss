@@ -39,7 +39,7 @@ body[data-theme="light"] {
 }
 
 .base-content {
-  padding: 5rem 2rem;
+  padding: 2rem 5rem;
 }
 
 a {
@@ -49,4 +49,18 @@ a {
 }
 a:hover {
   border-bottom: 1px solid white;
+}
+
+/* 📱 Mobile (768px and below) */
+@media (max-width: 768px) {
+  .base-content {
+    padding: 1rem;
+  }
+}
+
+/* 🧁 Small Mobile (480px and below) */
+@media (max-width: 480px) {
+  .base-content {
+  padding: 1rem;
+}
 }

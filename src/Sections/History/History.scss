@@ -1,8 +1,15 @@
 .history {
   padding: 2rem;
 
+  .ant-table-row:hover > td {
+    background-color: #ffffff5b !important;
+    color: rgb(0, 0, 0) !important;
+    font-weight: 600;
+  }
+
   .history_header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
     gap: 1rem;
@@ -14,7 +21,7 @@
     }
   }
 
-  // AntD table customization (optional):
+  // AntD table customization
   .ant-table {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -25,11 +32,63 @@
       background: rgba(255, 255, 255, 0.2);
       color: #fff;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .ant-table-tbody > tr > td {
       color: #fff;
       background: transparent;
+      font-size: 1rem;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+  }
+
+  /* 📱 Mobile responsive adjustments */
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .history_header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      .title {
+        font-size: 1.25rem;
+        text-align: left;
+      }
+    }
+
+    .ant-table {
+      font-size: 0.85rem;
+
+      // Enable horizontal scroll for wide tables
+      .ant-table-container {
+        overflow-x: auto;
+      }
+
+      .ant-table-thead > tr > th,
+      .ant-table-tbody > tr > td {
+        padding: 0.5rem;
+        text-align: left;
+        white-space: nowrap; // prevent squishing columns
+      }
+    }
+  }
+
+  /* 📱 For very small devices (below 480px) */
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1rem;
+    }
+
+    .ant-table {
+      font-size: 0.75rem;
+
+      .ant-table-thead > tr > th,
+      .ant-table-tbody > tr > td {
+        padding: 0.3rem;
+      }
     }
   }
 }

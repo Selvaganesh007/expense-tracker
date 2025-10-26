@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import "./Settings.scss";
 import { Button, Select, Switch, message, Upload, Input, Tag } from "antd";
-import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import { AppContext } from "../../Context/AppContext";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
@@ -17,18 +17,14 @@ interface TypeItem {
 
 interface SettingsData {
   currency: string[];
-  expense: TypeItem[];
-  income: TypeItem[];
-  theme: string[];
-  transactionMode: TypeItem[];
+  expense: string[];
+  income: string[];
+  isDarkTheme: boolean;
+  transactionMode: string[];
 }
 
 function Settings() {
-  const {
-    settings,
-    setSettings,
-    profileDetails,
-  } = useContext(AppContext);
+  const { profileDetails } = useContext(AppContext);
 
   const [newExpenseType, setNewExpenseType] = useState("");
   const [newIncomeType, setNewIncomeType] = useState("");
@@ -37,8 +33,9 @@ function Settings() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [settingsData, setSettingsData] = useState<SettingsData>();
 
-  const currency = settings.currency || "₹";
-  const theme = settings.theme || "light";
+  // 🔹 Selected current theme/currency
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("₹");
+  const [selectedTheme, setSelectedTheme] = useState<boolean>(false);
 
   // 🔹 Fetch user's settings
   useEffect(() => {
@@ -59,18 +56,19 @@ function Settings() {
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const userDoc = snapshot.docs[0];
-        setSettingsData(userDoc.data().settings);
+        const data = userDoc.data().settings;
+        setSettingsData(data);
+        setSelectedCurrency(data.currency?.[0] || "₹");
+        setSelectedTheme(data.isDarkTheme || false);
       }
     };
-
     fetchCollections();
     fetchUserSettings();
   }, [profileDetails.user_id]);
 
-  // 🔹 Fetch transactions when collection changes
+  // 🔹 Fetch transactions
   useEffect(() => {
     if (!selectedCollection) return;
-
     const fetchTransactions = async () => {
       const txRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
       const q = query(txRef, where("collection_id", "==", selectedCollection));
@@ -78,17 +76,8 @@ function Settings() {
       const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setTransactions(list);
     };
-
     fetchTransactions();
   }, [selectedCollection]);
-
-  // 🔹 Update local settings (theme, currency)
-  const updateSettings = (key: string, value: any) => {
-    const updated = { ...settings, [key]: value };
-    setSettings(updated);
-    localStorage.setItem("settings", JSON.stringify(updated));
-    if (key === "theme") document.body.setAttribute("data-theme", value);
-  };
 
   // 🔹 Update Firebase user settings
   const updateUserSettingsInDB = async (updatedSettings: SettingsData) => {
@@ -109,59 +98,54 @@ function Settings() {
     }
   };
 
-  // 🔹 Add Expense
+  // 🔹 Update currency/theme in Firebase
+  const updateSettings = async (field: "currency" | "isDarkTheme", value: string | boolean) => {
+    if (!settingsData) return;
+    const updated = { ...settingsData, [field]: [value] };
+    if (field === "currency") setSelectedCurrency(value as string);
+    if (field === "isDarkTheme") setSelectedTheme(value as boolean);
+    await updateUserSettingsInDB(updated);
+  };
+
+  // 🔹 Expense / Income Type handlers
   const addExpenseType = async () => {
-    if (!newExpenseType.trim()) return;
-    const newType: TypeItem = {
-      label: newExpenseType.trim(),
-      value: newExpenseType.trim().toLowerCase().replace(/\s+/g, "_"),
-    };
-
+    if (!newExpenseType.trim() || !settingsData) return;
     const updated = {
-      ...settingsData!,
-      expense: [...(settingsData?.expense || []), newType],
+      ...settingsData,
+      expense: [...settingsData.expense, newExpenseType.trim()],
     };
-
     await updateUserSettingsInDB(updated);
     setNewExpenseType("");
   };
 
-  // 🔹 Remove Expense
   const removeExpenseType = async (value: string) => {
+    if (!settingsData) return;
     const updated = {
-      ...settingsData!,
-      expense: (settingsData?.expense || []).filter((t) => t.value !== value),
+      ...settingsData,
+      expense: settingsData.expense.filter((t) => t !== value),
     };
     await updateUserSettingsInDB(updated);
   };
 
-  // 🔹 Add Income
   const addIncomeType = async () => {
-    if (!newIncomeType.trim()) return;
-    const newType: TypeItem = {
-      label: newIncomeType.trim(),
-      value: newIncomeType.trim().toLowerCase().replace(/\s+/g, "_"),
-    };
-
+    if (!newIncomeType.trim() || !settingsData) return;
     const updated = {
-      ...settingsData!,
-      income: [...(settingsData?.income || []), newType],
+      ...settingsData,
+      income: [...settingsData.income, newIncomeType.trim()],
     };
-
     await updateUserSettingsInDB(updated);
     setNewIncomeType("");
   };
 
-  // 🔹 Remove Income
   const removeIncomeType = async (value: string) => {
+    if (!settingsData) return;
     const updated = {
-      ...settingsData!,
-      income: (settingsData?.income || []).filter((t) => t.value !== value),
+      ...settingsData,
+      income: settingsData.income.filter((t) => t !== value),
     };
     await updateUserSettingsInDB(updated);
   };
 
-  // 🔹 Export Data
   const handleExport = () => {
     if (!transactions) return;
     const worksheet = XLSX.utils.json_to_sheet(transactions);
@@ -179,7 +163,7 @@ function Settings() {
       <div className="settings_item">
         <label>Currency:</label>
         <Select
-          value={currency}
+          value={selectedCurrency}
           onChange={(val) => updateSettings("currency", val)}
           style={{ width: 120 }}
         >
@@ -190,13 +174,12 @@ function Settings() {
           ))}
         </Select>
       </div>
-
       {/* Theme */}
       <div className="settings_item">
         <label>Theme:</label>
         <Switch
-          checked={theme === "dark"}
-          onChange={(checked) => updateSettings("theme", checked ? "dark" : "light")}
+          checked={selectedTheme}
+          onChange={(checked) => updateSettings("isDarkTheme", checked)}
           checkedChildren="Dark"
           unCheckedChildren="Light"
         />
@@ -206,16 +189,19 @@ function Settings() {
       <div className="settings_item">
         <label>Expense Types:</label>
         <div>
-          {(settingsData?.expense || []).map((type) => (
-            <Tag
-              key={type.value}
-              closable
-              onClose={() => removeExpenseType(type.value)}
-              style={{ marginBottom: "5px" }}
-            >
-              {type.label}
-            </Tag>
-          ))}
+          {(settingsData?.expense || []).map((type) => {
+            const typeObj = typeof type === "string" ? { label: type, value: type } : type;
+            return (
+              <Tag
+                key={typeObj.value}
+                closable
+                onClose={() => removeExpenseType(typeObj.value)}
+                style={{ marginBottom: "5px" }}
+              >
+                {typeObj.label}
+              </Tag>
+            );
+          })}
           <Input
             placeholder="New expense type"
             value={newExpenseType}
@@ -232,16 +218,19 @@ function Settings() {
       <div className="settings_item">
         <label>Income Types:</label>
         <div>
-          {(settingsData?.income || []).map((type) => (
-            <Tag
-              key={type.value}
-              closable
-              onClose={() => removeIncomeType(type.value)}
-              style={{ marginBottom: "5px" }}
-            >
-              {type.label}
-            </Tag>
-          ))}
+          {(settingsData?.income || []).map((type) => {
+            const typeObj = typeof type === "string" ? { label: type, value: type } : type;
+            return (
+              <Tag
+                key={typeObj.value}
+                closable
+                onClose={() => removeIncomeType(typeObj.value)}
+                style={{ marginBottom: "5px" }}
+              >
+                {typeObj.label}
+              </Tag>
+            );
+          })}
           <Input
             placeholder="New income type"
             value={newIncomeType}
@@ -254,7 +243,7 @@ function Settings() {
         </div>
       </div>
 
-      {/* Export Section */}
+      {/* Export */}
       <div className="settings_item">
         <label>Export:</label>
         <Select

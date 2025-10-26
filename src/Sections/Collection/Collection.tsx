@@ -13,7 +13,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-
+import { MdDelete, MdEditSquare } from "react-icons/md";
 import { db } from "../../../firebase";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { useNavigate } from "react-router-dom";
@@ -213,26 +213,28 @@ function Collection() {
                 navigate(`/collection/${encodeURIComponent(value.id)}`);
               }}
             >
-              <h4>{value.name}</h4>
-              <h4>Balance: ₹{value.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h4>
-              <div className="collection_item-action">
-                <Button
-                  type="primary"
-                  size={"small"}
-                  onClick={(e) => {
+              <div className="collection_item_header">
+                <h4 className="collection_name">{value.name}</h4>
+                <div className="collection_item-action">
+                  <Button
+                    type="primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditClick(value);
+                    }}
+                  >
+                    <MdEditSquare />
+                  </Button>
+                  <Button type="primary" onClick={(e) => {
                     e.stopPropagation();
-                    onEditClick(value);
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button type="primary" size={"small"} onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteClick(value.id);
-                }} danger>
-                  Delete
-                </Button>
+                    onDeleteClick(value.id);
+                  }} danger>
+                    <MdDelete />
+                  </Button>
+                </div>
               </div>
+              <h4>Balance: ₹{value.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h4>
+              <h4>Updated on: {value.updated_at}</h4>
             </div>
           );
         })}

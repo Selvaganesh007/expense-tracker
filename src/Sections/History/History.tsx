@@ -15,8 +15,8 @@ import { AppContext } from "../../Context/AppContext";
 const { Search } = Input;
 
 function History() {
-  const { profileDetails, settings } = useContext(AppContext);
-  const currency = settings.currency || "₹";
+  const { profileDetails } = useContext(AppContext);
+  const currency =  "₹";
 
   const [transactions, setTransactions] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -60,7 +60,7 @@ function History() {
             return {
               id: doc.id,
               ...data,
-              collectionName: col.name,
+              collectionName: col?.name,
               date,
               time,
             };
@@ -91,7 +91,8 @@ function History() {
       item.name?.toLowerCase().includes(searchText.toLowerCase()) ||
       item.amount?.toString().includes(searchText) ||
       item.type?.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.collectionName?.toLowerCase().includes(searchText.toLowerCase());
+      item.collectionName?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.transactionMode?.toLowerCase().includes(searchText.toLowerCase());
     return matchesSearch;
   });
 
@@ -111,6 +112,11 @@ function History() {
       title: "Category",
       dataIndex: "type",
       key: "type",
+    },
+    {
+      title: "Transaction Mode",
+      dataIndex: "transactionMode",
+      key: "transactionMode",
     },
     {
       title: "Flow Type",
@@ -146,13 +152,12 @@ function History() {
       <div className="history_header">
         <div className="title">All Transactions</div>
         <Search
-          placeholder="Search by name, type, amount, or collection"
+          placeholder="Search by name, type, amount, collection or transaction mode"
           onChange={(e) => setSearchText(e.target.value)}
           value={searchText}
-          style={{ width: 250, marginRight: 16 }}
+          style={{ width: 500}}
         />
       </div>
-
       <Table
         columns={columns}
         dataSource={filteredData}

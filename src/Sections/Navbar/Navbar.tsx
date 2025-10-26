@@ -75,15 +75,13 @@ function Navbar() {
           </NavLink>
         ))}
       </div>
-
-      {/* Profile Section */}
       <div className="profile">
         <h5 className="profile_name">{profileDetails?.name}</h5>
-        <img
+        {profileDetails?.picture !='' ? <img
           className="profile-photo"
           src={profileDetails?.picture}
           alt="Profile"
-        />
+        /> : ''}
       </div>
     </nav>
   );

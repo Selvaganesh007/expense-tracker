@@ -11,20 +11,31 @@
     display: flex;
     gap: 1rem;
     .collection_item {
-      width: 10rem;
+      width: 22rem;
       margin: 1rem 0;
-      padding: 1rem;
+      padding: 2rem;
       display: flex;
       gap: 1rem;
       flex-direction: column;
       border-radius: 1rem;
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: 500;
       background-color: #243b55;
       cursor: pointer;
-      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.2);
+      .collection_item_header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .collection_name {
+          text-align: center;
+          font-size: 1.5rem;
+          text-decoration: underline;
+        }
+      }
       .collection_item-action {
         display: flex;
+        justify-content: flex-end;
         gap: 1rem;
       }
       h4 {

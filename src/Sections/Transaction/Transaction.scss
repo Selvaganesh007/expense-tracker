@@ -7,11 +7,7 @@
     justify-content: space-between;
     align-items: center;
     margin: 2rem 0;
-
-    h2 {
-      font-size: 1.8rem;
-    }
-
+    font-size: 1.8rem;
     button {
       padding: 0.6rem 1.2rem;
       font-size: 1rem;
@@ -78,16 +74,15 @@
 
   /* 📱 Mobile (768px and below) */
   @media (max-width: 768px) {
-    .expense_header,
+    .expense_header {
+
+    }
     .collection_balance {
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.8rem;
       margin: 1rem 0;
-
-      h2 {
-        font-size: 1.5rem;
-      }
+      font-size: 1.2rem;
     }
 
     .expense_list {

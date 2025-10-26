@@ -265,21 +265,18 @@ const TransactionForm = () => {
               disabled={!selectedCashFlow}
               allowClear
               showSearch
-              optionFilterProp="children"
-            >
-              {(selectedCashFlow === "income"
+              optionFilterProp="label"
+              options={(selectedCashFlow === "income"
                 ? incomeTypes
                 : selectedCashFlow === "expense"
-                ? expenseTypes
-                : []
-              ).map((item) => (
-                <Select.Option key={item.value} value={item.value}>
-                  {item.label}
-                </Select.Option>
-              ))}
-            </Select>
+                  ? expenseTypes
+                  : []
+              ).map((item) => ({
+                label: item,
+                value: item,
+              }))}
+            />
           </Item>
-
           {/* Transaction Mode */}
           <Item label="Transaction Mode" name="transactionMode">
             <Select
@@ -287,14 +284,12 @@ const TransactionForm = () => {
               size="large"
               allowClear
               showSearch
-              optionFilterProp="children"
-            >
-              {transactionModes.map((item) => (
-                <Select.Option key={item.value} value={item.value}>
-                  {item.label}
-                </Select.Option>
-              ))}
-            </Select>
+              optionFilterProp="label"
+              options={transactionModes.map((item) => {
+                return ({
+                label: item,
+                value: item,
+              })})} />
           </Item>
 
           {/* Amount */}

@@ -21,8 +21,8 @@ import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Dashboard() {
-  const { settings, profileDetails } = useContext(AppContext);
-  const currency = settings.currency || "₹";
+  const { profileDetails } = useContext(AppContext);
+  const currency = "₹";
 
   const [collections, setCollections] = useState<any[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);

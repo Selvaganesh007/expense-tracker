@@ -30,17 +30,19 @@ function Transaction() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { profileDetails } = useContext(AppContext);
-  const { expenseTypes, settings } = useContext(AppContext);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
-  const [filterType, setFilterType] = useState("");
+  const [currency, setCurrency] = useState("₹");
+  const [incomeTypeFilter, setIncomeTypeFilter] = useState("");
+  const [transactionModeFilter, setTransactionModeFilter] = useState("");
+  const [expenseTypeFilter, setExpenseTypeFilter] = useState("");
   const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
-
-
-  const currency = settings.currency || "₹";
+  const [incomeTypes, setIncomeTypes] = useState<string[]>([]);
+  const [expenseTypes, setExpenseTypes] = useState<string[]>([]);
+  const [transactionModes, setTransactionModes] = useState<string[]>([]);
 
   useEffect(() => {
     if (profileDetails.user_id) getTransactionList();
@@ -65,6 +67,29 @@ function Transaction() {
     setExpenseTotal(expense);
   }, [transactionList]);
 
+  useEffect(() => {
+    fetchUserSettings();
+  }, [profileDetails.user_id]);
+
+  const fetchUserSettings = async () => {
+    if (!profileDetails?.user_id) return;
+    try {
+      const usersRef = collection(db, DB_COLLECTION_NAMES.USERS);
+      const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const userDoc = snapshot.docs[0];
+        const settings = userDoc.data().settings || {};
+        setCurrency(settings.currency[0])
+        setIncomeTypes(settings.income || []);
+        setExpenseTypes(settings.expense || []);
+        setTransactionModes(settings.transactionMode || []);
+      }
+    } catch (err) {
+      console.error("Error fetching user settings:", err);
+    } finally {
+    }
+  };
 
   const getTransactionList = async () => {
     const usersRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
@@ -122,14 +147,27 @@ function Transaction() {
     }
   };
 
-
   const filteredTransaction = transactionList.filter((exp: any) => {
     const matchesSearch =
       exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
       exp.amount.toString().includes(debouncedSearchText);
-    const matchesType =
-      filterType === "" || exp.type.toLowerCase() === filterType.toLowerCase();
-    return matchesSearch && matchesType;
+
+    const matchesExpenseType =
+      !expenseTypeFilter || exp.type?.toLowerCase() === expenseTypeFilter.toLowerCase();
+
+    const matchesIncomeType =
+      !incomeTypeFilter || exp.type?.toLowerCase() === incomeTypeFilter.toLowerCase();
+
+    const matchesTransactionMode =
+      !transactionModeFilter ||
+      exp.transactionMode?.toLowerCase() === transactionModeFilter.toLowerCase();
+
+    return (
+      matchesSearch &&
+      matchesExpenseType &&
+      matchesIncomeType &&
+      matchesTransactionMode
+    );
   });
 
   return (
@@ -145,13 +183,39 @@ function Transaction() {
           style={{ width: 200, marginRight: 16 }}
         />
         <Select
-          placeholder="Filter by type"
+          placeholder="Filter by expense type"
           allowClear
-          value={filterType || undefined}
-          onChange={(value) => setFilterType(value || "")}
+          value={expenseTypeFilter || undefined}
+          onChange={(value) => setExpenseTypeFilter(value || "")}
           style={{ width: 180, marginRight: 16 }}
         >
           {expenseTypes.map((type: any) => (
+            <Option key={type} value={type}>
+              {type}
+            </Option>
+          ))}
+        </Select>
+        <Select
+          placeholder="Filter by income type"
+          allowClear
+          value={incomeTypeFilter || undefined}
+          onChange={(value) => setIncomeTypeFilter(value || "")}
+          style={{ width: 180, marginRight: 16 }}
+        >
+          {incomeTypes.map((type: any) => (
+            <Option key={type} value={type}>
+              {type}
+            </Option>
+          ))}
+        </Select>
+        <Select
+          placeholder="Filter by transaction mode"
+          allowClear
+          value={transactionModeFilter || undefined}
+          onChange={(value) => setTransactionModeFilter(value || "")}
+          style={{ width: 180, marginRight: 16 }}
+        >
+          {transactionModes.map((type: any) => (
             <Option key={type} value={type}>
               {type}
             </Option>
