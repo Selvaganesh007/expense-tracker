@@ -7,4 +7,5 @@ export enum DB_COLLECTION_NAMES {
   COLLECTION = "collection",
   CASH_FLOW = "cash-flow",
   TRANSACTION = "transaction",
+  USERS= "users",
 }

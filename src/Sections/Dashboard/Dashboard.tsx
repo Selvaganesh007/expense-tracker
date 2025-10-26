@@ -189,7 +189,7 @@ function Dashboard() {
               {tx.amount}
             </div>
             <div>
-              {tx.type === "Expense" ? (
+              {tx.cashFlowType === "expense" ? (
                 <FaMoneyBillTrendUp />
               ) : (
                 <GiTakeMyMoney />
