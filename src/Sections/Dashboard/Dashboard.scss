@@ -1,114 +1,231 @@
-.collection {
+.dashboard {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  font-family: "Poppins", sans-serif;
   color: #fff;
+  flex-wrap: wrap; // ensures stacking on small screens
 
-  .collection_header {
+  .glass-card {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 2rem;
+    color: #fff;
+  }
+
+  /* ===== LEFT SECTION (Stats + Chart) ===== */
+  .dashboard_amount {
+    flex: 1;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 10px;
-    margin: 2rem 0;
+    flex-direction: column;
+    min-width: 320px;
 
-    h2 {
+    .total_amount {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      h3 {
+        font-size: 3rem;
+        font-weight: 900;
+        margin: 0;
+      }
+      p {
+        color: #ddd;
+        margin: 0.5rem 0 0;
+      }
+
+      .ant-select {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 0.5rem;
+        color: #fff;
+
+        .ant-select-selector {
+          background: transparent !important;
+          color: #fff;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .ant-select-selection-item {
+          color: #fff !important;
+        }
+      }
+    }
+
+    .Transactions {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+
+      .Transactions_sections {
+        flex: 1;
+        min-width: 180px;
+
+        .label {
+          display: flex;
+          justify-content: space-between;
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+        .transaction_amount {
+          font-size: 2rem;
+          margin: 0.5rem 0;
+        }
+        p {
+          color: #ffffff;
+          margin: 0;
+        }
+      }
+    }
+
+    .pie_chart {
+      margin-top: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 1rem;
+
+      canvas {
+        width: 100% !important;
+        height: auto !important;
+      }
+    }
+  }
+
+  /* ===== RIGHT SECTION (Expense List) ===== */
+  .expense {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    height: auto;
+
+    p {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0 0 1rem;
+    }
+
+    .expense_transaction_header,
+    .expense_transaction {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem;
+      align-items: center;
+    }
+
+    .expense_transaction_header {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .expense_transaction {
+      margin: 0.5rem 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+      transition: 0.3s ease;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+      }
+
+      div {
+        color: #fff;
+        word-break: break-word;
+      }
+    }
+
+    /* 🔽 Make table scrollable on small screens */
+    .expense_transaction_header,
+    .expense_transaction {
+      min-width: 500px;
+    }
+
+    overflow-x: auto; // allows scroll on mobile
+  }
+
+  /* ===== RESPONSIVE BREAKPOINTS ===== */
+
+  /* Tablet View */
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    padding: 1.5rem;
+
+    .dashboard_amount,
+    .expense {
+      width: 100%;
+    }
+
+    .total_amount h3 {
+      font-size: 2.5rem;
+    }
+  }
+
+  /* Mobile View */
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .dashboard_amount {
+      .total_amount {
+        flex-direction: column;
+        align-items: flex-start;
+
+        h3 {
+          font-size: 2rem;
+        }
+      }
+
+      .Transactions {
+        flex-direction: column;
+      }
+
+      .pie_chart {
+        margin-top: 1.5rem;
+      }
+    }
+
+    .expense {
+      p {
+        font-size: 1.4rem;
+      }
+
+      .expense_transaction_header,
+      .expense_transaction {
+        grid-template-columns: 1.5fr 1fr 1fr;
+        gap: 0.5rem;
+
+        div:last-child {
+          display: none; // hide type icon on very small screens
+        }
+      }
+    }
+  }
+
+  /* Small Mobile View */
+  @media (max-width: 480px) {
+    .dashboard_amount .total_amount h3 {
       font-size: 1.8rem;
     }
 
-    button {
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      border-radius: 0.5rem;
-      cursor: pointer;
-    }
-  }
-
-  .collection_list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-
-    .collection_item {
-      width: 10rem;
-      margin: 1rem 0;
-      padding: 1rem;
-      display: flex;
-      gap: 1rem;
-      flex-direction: column;
-      border-radius: 1rem;
-      font-size: 1rem;
-      font-weight: 500;
-      background-color: #243b55;
-      cursor: pointer;
-      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-
-      .collection_item-action {
-        display: flex;
-        gap: 1rem;
-      }
-
-      h4 {
-        margin: 0;
-      }
-
-      &:hover {
-        background-color: #ffffff46;
-        color: #243b55;
-      }
-    }
-  }
-
-  /* 🧩 Tablet Responsive */
-  @media (max-width: 1024px) {
-    .collection_header {
-      flex-direction: column;
-      gap: 1rem;
-      margin: 1.5rem 0;
+    .Transactions_sections .transaction_amount {
+      font-size: 1.6rem;
     }
 
-    .collection_list {
-      justify-content: center;
-      .collection_item {
-        width: 8rem;
+    .expense {
+      .expense_transaction_header {
         font-size: 0.9rem;
       }
-    }
-  }
 
-  /* 📱 Mobile Responsive */
-  @media (max-width: 768px) {
-    .collection_header {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.8rem;
-      margin: 1rem 0;
-    }
-
-    .collection_list {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-
-      .collection_item {
-        width: 90%;
-        font-size: 0.95rem;
-        text-align: center;
-        padding: 1rem;
+      .expense_transaction {
+        font-size: 0.9rem;
       }
-    }
-  }
-
-  /* 🧁 Small Mobile Devices */
-  @media (max-width: 480px) {
-    .collection_header {
-      h2 {
-        font-size: 1.4rem;
-      }
-    }
-
-    .collection_list .collection_item {
-      width: 100%;
-      font-size: 0.9rem;
-      padding: 0.8rem;
     }
   }
 }
