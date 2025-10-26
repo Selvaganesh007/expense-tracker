@@ -1,44 +1,134 @@
 .navbar {
-  background: linear-gradient(135deg, #141e30, #243b55);
-  padding: 1rem 2rem;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  // align-items: center;
-  position: fixed;
-  z-index: 99;
-  width: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 5vh;
+  padding: 1rem 2rem;
+  background: #121212;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: "Poppins", sans-serif;
+
   .app_name {
-    font-size: 2rem;
-    font-weight: 700;
-    font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
-    color: white;
-    padding-left: 2rem;
-    display: inline;
+    font-size: 1.5rem;
+    font-weight: 600;
   }
+
   .navlinks {
-    width: 50%;
     display: flex;
-    justify-content: flex-end;
-    .navitem {
-      display: flex;
-      margin: 0.5rem 1rem 0 1rem;
+    align-items: center;
+    gap: 1.5rem;
+
+    a {
+      text-decoration: none;
+      color: #fff;
+      transition: 0.3s;
+
+      .navitem {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 1rem;
+
+        &:hover {
+          color: #00c4ff;
+        }
+      }
+
+      &.active {
+        color: #00c4ff;
+        font-weight: 600;
+      }
+    }
+
+    .close-btn {
+      display: none; // Hidden on desktop
     }
   }
+
   .profile {
     display: flex;
-    gap: 1rem;
     align-items: center;
-    cursor: pointer;
-    padding-right: 2rem;
+    gap: 0.6rem;
+
     .profile_name {
-      color: white;
+      font-size: 0.95rem;
+      font-weight: 500;
     }
+
     .profile-photo {
-      width: 2rem;
-      border-radius: 50% 50%;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  }
+
+  // 🔽 Hide hamburger on desktop
+  .menu-icon {
+    display: none;
+    cursor: pointer;
+  }
+
+  // ✅ Responsive Styles
+  @media (max-width: 768px) {
+    .menu-icon {
+      display: block;
+    }
+
+    .navlinks {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      height: 100vh;
+      width: 70%;
+      background: rgba(18, 18, 18, 0.98);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 5rem 2rem;
+      gap: 2rem;
+      transition: right 0.4s ease;
+
+      &.active {
+        right: 0;
+      }
+
+      a {
+        font-size: 1.2rem;
+      }
+
+      .close-btn {
+        display: block;
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        cursor: pointer;
+        color: #fff;
+        transition: 0.3s;
+
+        &:hover {
+          color: #00c4ff;
+        }
+      }
+    }
+
+    .profile {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+
+    .app_name {
+      font-size: 1.2rem;
+    }
+
+    .navlinks {
+      width: 80%;
     }
   }
 }
