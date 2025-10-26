@@ -4,9 +4,11 @@ import { HiCollection } from "react-icons/hi";
 import { FaHistory } from "react-icons/fa";
 import { NAVBAR_TABS_CONST } from "../../Utils/NAVBAR_TABS_CONST";
 import { NavLink } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { CiLogout } from "react-icons/ci";
+import { RxHamburgerMenu } from "react-icons/rx";
+import { IoClose } from "react-icons/io5";
 
 const NAVBAR_ITEMS = [
   {
@@ -19,11 +21,6 @@ const NAVBAR_ITEMS = [
     icon: <HiCollection />,
     route: "/collection",
   },
-  // {
-  //   name: NAVBAR_TABS_CONST.cash_flow,
-  //   icon: <MdOutlineDashboard />,
-  //   route: "/cash-flow",
-  // },
   {
     name: NAVBAR_TABS_CONST.history,
     icon: <FaHistory />,
@@ -35,41 +32,60 @@ const NAVBAR_ITEMS = [
     route: "/settings",
   },
   {
-    name: NAVBAR_TABS_CONST.Settings,
-    icon: <MdOutlineSettings />,
-    route: "/settings",
-  },
-  {
     name: NAVBAR_TABS_CONST.logout,
-    icon: <MdOutlineSettings />,
+    icon: <CiLogout />,
     route: "/log-out",
   },
 ];
 
 function Navbar() {
   const { profileDetails } = useContext(AppContext);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <div className="navbar">
+    <nav className="navbar">
       <div className="app_name">Expense Tracker</div>
-      <div className="navlinks">
+
+      {/* Hamburger Icon */}
+      <div className="menu-icon" onClick={toggleMenu}>
+        {menuOpen ? <IoClose size={26} /> : <RxHamburgerMenu size={24} />}
+      </div>
+
+      {/* Navigation Links */}
+      <div className={`navlinks ${menuOpen ? "active" : ""}`}>
+        {/* Close button inside mobile menu */}
+        <div className="close-btn" onClick={closeMenu}>
+          <IoClose size={28} />
+        </div>
+
         {NAVBAR_ITEMS.map((tab) => (
-          <NavLink key={tab.name} to={tab.route}>
+          <NavLink
+            key={tab.name}
+            to={tab.route}
+            onClick={closeMenu}
+            className={({ isActive }) => (isActive ? "active" : "")}
+          >
             <div className="navitem">
+              <div className="tab_icon">{tab.icon}</div>
               <div className="tab_name">{tab.name}</div>
             </div>
           </NavLink>
         ))}
       </div>
-      {/* <NavLink to={"/sign-up"}>Logout</NavLink> */}
+
+      {/* Profile Section */}
       <div className="profile">
         <h5 className="profile_name">{profileDetails?.name}</h5>
         <img
           className="profile-photo"
           src={profileDetails?.picture}
-          alt={"Profile picture"}
+          alt="Profile"
         />
       </div>
-    </div>
+    </nav>
   );
 }
 

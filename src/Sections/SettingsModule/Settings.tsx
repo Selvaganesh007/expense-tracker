@@ -1,141 +1,181 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Settings.scss";
-import {
-  Button,
-  Select,
-  Switch,
-  message,
-  Upload,
-  DatePicker,
-  Input,
-  Tag,
-} from "antd";
+import { Button, Select, Switch, message, Upload, Input, Tag } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
-import dayjs from "dayjs";
 import { AppContext } from "../../Context/AppContext";
+import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
+import { db } from "../../../firebase";
+import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 
 const { Option } = Select;
-const CURRENCIES = ["₹", "$", "€", "£", "¥"];
+
+interface TypeItem {
+  label: string;
+  value: string;
+}
+
+interface SettingsData {
+  currency: string[];
+  expense: TypeItem[];
+  income: TypeItem[];
+  theme: string[];
+  transactionMode: TypeItem[];
+}
 
 function Settings() {
   const {
     settings,
     setSettings,
-    expenseTypes,
-    setExpenseTypes,
-    incomeTypes,
-    setIncomeTypes,
+    profileDetails,
   } = useContext(AppContext);
 
-  const [date, setDate] = useState(null);
-  const [dataType, setDataType] = useState("both");
   const [newExpenseType, setNewExpenseType] = useState("");
   const [newIncomeType, setNewIncomeType] = useState("");
+  const [collections, setCollections] = useState<any[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [settingsData, setSettingsData] = useState<SettingsData>();
 
   const currency = settings.currency || "₹";
   const theme = settings.theme || "light";
 
+  // 🔹 Fetch user's settings
+  useEffect(() => {
+    if (!profileDetails.user_id) return;
+
+    const fetchCollections = async () => {
+      const colRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
+      const q = query(colRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
+      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setCollections(list);
+      if (list.length > 0) setSelectedCollection(list[0].id);
+    };
+
+    const fetchUserSettings = async () => {
+      const colRef = collection(db, DB_COLLECTION_NAMES.USERS);
+      const q = query(colRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const userDoc = snapshot.docs[0];
+        setSettingsData(userDoc.data().settings);
+      }
+    };
+
+    fetchCollections();
+    fetchUserSettings();
+  }, [profileDetails.user_id]);
+
+  // 🔹 Fetch transactions when collection changes
+  useEffect(() => {
+    if (!selectedCollection) return;
+
+    const fetchTransactions = async () => {
+      const txRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
+      const q = query(txRef, where("collection_id", "==", selectedCollection));
+      const snapshot = await getDocs(q);
+      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setTransactions(list);
+    };
+
+    fetchTransactions();
+  }, [selectedCollection]);
+
+  // 🔹 Update local settings (theme, currency)
   const updateSettings = (key: string, value: any) => {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
     localStorage.setItem("settings", JSON.stringify(updated));
-    if (key === "theme") {
-      document.body.setAttribute("data-theme", value);
+    if (key === "theme") document.body.setAttribute("data-theme", value);
+  };
+
+  // 🔹 Update Firebase user settings
+  const updateUserSettingsInDB = async (updatedSettings: SettingsData) => {
+    try {
+      const usersRef = collection(db, DB_COLLECTION_NAMES.USERS);
+      const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const userDoc = snapshot.docs[0];
+        const userDocRef = doc(db, DB_COLLECTION_NAMES.USERS, userDoc.id);
+        await updateDoc(userDocRef, { settings: updatedSettings });
+        setSettingsData(updatedSettings);
+        message.success("Settings updated successfully!");
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to update settings in Firebase.");
     }
   };
 
-  const addExpenseType = () => {
-    if (newExpenseType && !expenseTypes.includes(newExpenseType)) {
-      const updated = [...expenseTypes, newExpenseType];
-      setExpenseTypes(updated);
-      localStorage.setItem("expenseTypes", JSON.stringify(updated));
-      setNewExpenseType("");
-    }
+  // 🔹 Add Expense
+  const addExpenseType = async () => {
+    if (!newExpenseType.trim()) return;
+    const newType: TypeItem = {
+      label: newExpenseType.trim(),
+      value: newExpenseType.trim().toLowerCase().replace(/\s+/g, "_"),
+    };
+
+    const updated = {
+      ...settingsData!,
+      expense: [...(settingsData?.expense || []), newType],
+    };
+
+    await updateUserSettingsInDB(updated);
+    setNewExpenseType("");
   };
 
-  const removeExpenseType = (type: string) => {
-    const updated = expenseTypes.filter((t: any) => t !== type);
-    setExpenseTypes(updated);
-    localStorage.setItem("expenseTypes", JSON.stringify(updated));
+  // 🔹 Remove Expense
+  const removeExpenseType = async (value: string) => {
+    const updated = {
+      ...settingsData!,
+      expense: (settingsData?.expense || []).filter((t) => t.value !== value),
+    };
+    await updateUserSettingsInDB(updated);
   };
 
-  const addIncomeType = () => {
-    if (newIncomeType && !incomeTypes.includes(newIncomeType)) {
-      const updated = [...incomeTypes, newIncomeType];
-      setIncomeTypes(updated);
-      localStorage.setItem("incomeTypes", JSON.stringify(updated));
-      setNewIncomeType("");
-    }
+  // 🔹 Add Income
+  const addIncomeType = async () => {
+    if (!newIncomeType.trim()) return;
+    const newType: TypeItem = {
+      label: newIncomeType.trim(),
+      value: newIncomeType.trim().toLowerCase().replace(/\s+/g, "_"),
+    };
+
+    const updated = {
+      ...settingsData!,
+      income: [...(settingsData?.income || []), newType],
+    };
+
+    await updateUserSettingsInDB(updated);
+    setNewIncomeType("");
   };
 
-  const removeIncomeType = (type: string) => {
-    const updated = incomeTypes.filter((t: any) => t !== type);
-    setIncomeTypes(updated);
-    localStorage.setItem("incomeTypes", JSON.stringify(updated));
+  // 🔹 Remove Income
+  const removeIncomeType = async (value: string) => {
+    const updated = {
+      ...settingsData!,
+      income: (settingsData?.income || []).filter((t) => t.value !== value),
+    };
+    await updateUserSettingsInDB(updated);
   };
 
+  // 🔹 Export Data
   const handleExport = () => {
-    const expenses =
-      JSON.parse(localStorage.getItem("expenses") as string) || [];
-    const income = JSON.parse(localStorage.getItem("income") as string) || [];
-    let exportData: any[] = [];
-
-    if (dataType === "expense" || dataType === "both") {
-      exportData = exportData.concat(
-        expenses
-          .filter((e: any) =>
-            date ? e.date.startsWith(dayjs(date).format("YYYY-MM")) : true
-          )
-          .map((e: any) => ({ ...e, type: "Expense" }))
-      );
-    }
-
-    if (dataType === "income" || dataType === "both") {
-      exportData = exportData.concat(
-        income
-          .filter((i: any) =>
-            date ? i.date.startsWith(dayjs(date).format("YYYY-MM")) : true
-          )
-          .map((i: any) => ({ ...i, type: "Income" }))
-      );
-    }
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    if (!transactions) return;
+    const worksheet = XLSX.utils.json_to_sheet(transactions);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-
     XLSX.writeFile(workbook, "finance_data.xlsx");
     message.success("Exported successfully!");
-  };
-
-  // const handleImport = (file) => {
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     const data = JSON.parse(e.target.result);
-  //     if (data.expenses)
-  //       localStorage.setItem("expenses", JSON.stringify(data.expenses));
-  //     if (data.income)
-  //       localStorage.setItem("income", JSON.stringify(data.income));
-  //     message.success("Data imported successfully!");
-  //   };
-  //   reader.readAsText(file);
-  //   return false;
-  // };
-
-  const handleReset = () => {
-    localStorage.clear();
-    setSettings({ currency: "₹", theme: "light" });
-    setExpenseTypes(["Travel", "Food", "Shopping"]);
-    setIncomeTypes(["Salary", "Bonus"]);
-    document.body.setAttribute("data-theme", "light");
-    message.success("All data reset!");
   };
 
   return (
     <div className="settings glass-card">
       <h2>Settings</h2>
 
+      {/* Currency */}
       <div className="settings_item">
         <label>Currency:</label>
         <Select
@@ -143,7 +183,7 @@ function Settings() {
           onChange={(val) => updateSettings("currency", val)}
           style={{ width: 120 }}
         >
-          {CURRENCIES.map((cur) => (
+          {(settingsData?.currency || []).map((cur) => (
             <Option key={cur} value={cur}>
               {cur}
             </Option>
@@ -151,29 +191,29 @@ function Settings() {
         </Select>
       </div>
 
+      {/* Theme */}
       <div className="settings_item">
         <label>Theme:</label>
         <Switch
           checked={theme === "dark"}
-          onChange={(checked) =>
-            updateSettings("theme", checked ? "dark" : "light")
-          }
+          onChange={(checked) => updateSettings("theme", checked ? "dark" : "light")}
           checkedChildren="Dark"
           unCheckedChildren="Light"
         />
       </div>
 
+      {/* Expense Types */}
       <div className="settings_item">
         <label>Expense Types:</label>
         <div>
-          {expenseTypes.map((type: any) => (
+          {(settingsData?.expense || []).map((type) => (
             <Tag
-              key={type}
+              key={type.value}
               closable
-              onClose={() => removeExpenseType(type)}
+              onClose={() => removeExpenseType(type.value)}
               style={{ marginBottom: "5px" }}
             >
-              {type}
+              {type.label}
             </Tag>
           ))}
           <Input
@@ -188,17 +228,18 @@ function Settings() {
         </div>
       </div>
 
+      {/* Income Types */}
       <div className="settings_item">
         <label>Income Types:</label>
         <div>
-          {incomeTypes.map((type: any) => (
+          {(settingsData?.income || []).map((type) => (
             <Tag
-              key={type}
+              key={type.value}
               closable
-              onClose={() => removeIncomeType(type)}
+              onClose={() => removeIncomeType(type.value)}
               style={{ marginBottom: "5px" }}
             >
-              {type}
+              {type.label}
             </Tag>
           ))}
           <Input
@@ -213,38 +254,23 @@ function Settings() {
         </div>
       </div>
 
+      {/* Export Section */}
       <div className="settings_item">
         <label>Export:</label>
-        <DatePicker
-          picker="month"
-          value={date}
-          onChange={(d) => setDate(d)}
-          style={{ marginRight: "1rem" }}
-        />
         <Select
-          value={dataType}
-          onChange={setDataType}
-          style={{ width: 120, marginRight: "1rem" }}
+          style={{ width: 250, marginTop: 8 }}
+          value={selectedCollection || undefined}
+          onChange={(val) => setSelectedCollection(val)}
+          placeholder="Select Collection"
         >
-          <Option value="expense">Expense</Option>
-          <Option value="income">Income</Option>
-          <Option value="both">Both</Option>
+          {collections.map((c) => (
+            <Select.Option key={c.id} value={c.id}>
+              {c.name}
+            </Select.Option>
+          ))}
         </Select>
         <Button type="primary" onClick={handleExport}>
           Export Excel
-        </Button>
-      </div>
-
-      <div className="settings_item">
-        <label>Import:</label>
-        <Upload beforeUpload={() => {}} showUploadList={false}>
-          <Button icon={<UploadOutlined />}>Upload JSON</Button>
-        </Upload>
-      </div>
-
-      <div className="settings_item">
-        <Button danger onClick={handleReset}>
-          Reset All Data
         </Button>
       </div>
     </div>

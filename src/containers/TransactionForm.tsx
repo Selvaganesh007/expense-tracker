@@ -10,13 +10,16 @@ import {
   Select,
   message,
   InputNumber,
+  Spin,
 } from "antd";
-import { expenseTypeOptions, incomeTypeOptions } from "../Utils/common";
 import {
   addDoc,
   collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   serverTimestamp,
   Timestamp,
   updateDoc,
@@ -28,10 +31,17 @@ import { AppContext } from "../Context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
 
 const { Item } = Form;
+
+interface OptionItem {
+  label: string;
+  value: string;
+}
+
 interface ExpenseFormValues {
   name: string;
   type: string;
   cashFlowType: "income" | "expense";
+  transactionMode: string;
   amount: number;
   date: Dayjs;
   time: Dayjs;
@@ -47,6 +57,35 @@ const TransactionForm = () => {
   const [form] = Form.useForm();
   const isNew = mode === "new";
 
+  // 🔹 State for dropdown data from Firebase
+  const [incomeTypes, setIncomeTypes] = useState<OptionItem[]>([]);
+  const [expenseTypes, setExpenseTypes] = useState<OptionItem[]>([]);
+  const [transactionModes, setTransactionModes] = useState<OptionItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 🔹 Fetch user settings (income, expense, transactionMode)
+  const fetchUserSettings = async () => {
+    if (!profileDetails?.user_id) return;
+    try {
+      const usersRef = collection(db, DB_COLLECTION_NAMES.USERS);
+      const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const userDoc = snapshot.docs[0];
+        const settings = userDoc.data().settings || {};
+        setIncomeTypes(settings.income || []);
+        setExpenseTypes(settings.expense || []);
+        setTransactionModes(settings.transactionMode || []);
+      }
+    } catch (err) {
+      console.error("Error fetching user settings:", err);
+      messageApi.error("Failed to load settings from Firebase.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 Fetch existing transaction (for edit mode)
   const getExpenseById = async (transactionId: string) => {
     try {
       const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, transactionId);
@@ -59,22 +98,20 @@ const TransactionForm = () => {
           name: data.name,
           type: data.type,
           cashFlowType: data.cashFlowType,
+          transactionMode: data.transactionMode,
           amount: data.amount,
           date: dateValue,
           time: timeValue,
         });
+        setSelectedCashFlow(data.cashFlowType);
         setDocId(docSnap.id);
-        return { id: docSnap.id, ...docSnap.data() };
-      } else {
-        console.log("No such document!");
-        return null;
       }
     } catch (error) {
       console.error("Error fetching document:", error);
-      throw error;
     }
   };
 
+  // 🔹 Add/Edit Transaction
   const handleSubmit = async (values: ExpenseFormValues) => {
     const combinedDateTime = dayjs(values.date)
       .hour(values.time.hour())
@@ -85,6 +122,7 @@ const TransactionForm = () => {
       name: values.name,
       type: values.type,
       cashFlowType: values.cashFlowType,
+      transactionMode: values.transactionMode,
       amount: values.amount,
       datetime: firestoreTimestamp,
       updated_at: serverTimestamp(),
@@ -94,6 +132,7 @@ const TransactionForm = () => {
         collection_id: id,
       }),
     };
+
     try {
       if (isNew) {
         await addDoc(collection(db, DB_COLLECTION_NAMES.TRANSACTION), payload);
@@ -101,16 +140,13 @@ const TransactionForm = () => {
         const docRef = doc(db, DB_COLLECTION_NAMES.TRANSACTION, docId);
         await updateDoc(docRef, payload);
       }
-      setDocId("");
       form.resetFields();
+      setDocId("");
       navigate(`/collection/${id}`);
-      messageApi.success(
-        `Transaction ${isNew ? "added" : "edited"}  successfully`
-      );
+      messageApi.success(`Transaction ${isNew ? "added" : "updated"} successfully.`);
     } catch (err) {
-      messageApi.error(`Failed to ${isNew ? "add" : "edit"} the transaction. `);
-      console.error("transaction form err:", err);
-      return err;
+      console.error("Error submitting transaction:", err);
+      messageApi.error(`Failed to ${isNew ? "add" : "update"} transaction.`);
     }
   };
 
@@ -119,8 +155,20 @@ const TransactionForm = () => {
   };
 
   useEffect(() => {
-    if (!isNew) getExpenseById(mode as string);
-  }, [isNew]);
+    fetchUserSettings();
+  }, [profileDetails.user_id]);
+
+  useEffect(() => {
+    if (!isNew && mode) getExpenseById(mode);
+  }, [isNew, mode]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <Spin size="large" tip="Loading Settings..." />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -140,8 +188,9 @@ const TransactionForm = () => {
         }}
       >
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          Add Transaction
+          {isNew ? "Add Transaction" : "Edit Transaction"}
         </h2>
+
         <Form
           form={form}
           layout="vertical"
@@ -153,6 +202,7 @@ const TransactionForm = () => {
             time: isNew ? dayjs() : undefined,
           }}
         >
+          {/* Name */}
           <Item
             label="Name"
             name="name"
@@ -160,8 +210,9 @@ const TransactionForm = () => {
           >
             <Input placeholder="Enter name" size="large" />
           </Item>
-          {/* Cash Flow Type — moved above Type */}
-          <Form.Item
+
+          {/* Cash Flow Type */}
+          <Item
             label="Cash Flow Type"
             name="cashFlowType"
             rules={[{ required: true, message: "Please select cash flow type" }]}
@@ -172,7 +223,7 @@ const TransactionForm = () => {
               onChange={(e) => {
                 const value = e.target.value;
                 setSelectedCashFlow(value);
-                form.setFieldValue("type", undefined); // clear previous type selection
+                form.setFieldValue("type", undefined);
               }}
             >
               <Radio.Button
@@ -180,7 +231,7 @@ const TransactionForm = () => {
                 style={{
                   flex: 1,
                   textAlign: "center",
-                  backgroundColor: "green",
+                  backgroundColor: "#16a34a",
                   color: "white",
                 }}
               >
@@ -191,55 +242,68 @@ const TransactionForm = () => {
                 style={{
                   flex: 1,
                   textAlign: "center",
-                  backgroundColor: "red",
+                  backgroundColor: "#dc2626",
                   color: "white",
                 }}
               >
                 Expense
               </Radio.Button>
             </Radio.Group>
-          </Form.Item>
+          </Item>
 
-          {/* Type — depends on cashFlowType */}
-          <Form.Item
+          {/* Type Dropdown */}
+          <Item
             label="Type"
             name="type"
             rules={[{ required: true, message: "Please select a type" }]}
           >
             <Select
               placeholder={
-                selectedCashFlow
-                  ? "Select type"
-                  : "Select cash flow type first"
+                selectedCashFlow ? "Select type" : "Select cash flow type first"
               }
               size="large"
+              disabled={!selectedCashFlow}
               allowClear
               showSearch
               optionFilterProp="children"
-              disabled={!selectedCashFlow} // disable until income/expense is chosen
             >
               {(selectedCashFlow === "income"
-                ? incomeTypeOptions
+                ? incomeTypes
                 : selectedCashFlow === "expense"
-                  ? expenseTypeOptions
-                  : []
+                ? expenseTypes
+                : []
               ).map((item) => (
                 <Select.Option key={item.value} value={item.value}>
                   {item.label}
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
-          <Form.Item
+          </Item>
+
+          {/* Transaction Mode */}
+          <Item label="Transaction Mode" name="transactionMode">
+            <Select
+              placeholder="Select transaction mode"
+              size="large"
+              allowClear
+              showSearch
+              optionFilterProp="children"
+            >
+              {transactionModes.map((item) => (
+                <Select.Option key={item.value} value={item.value}>
+                  {item.label}
+                </Select.Option>
+              ))}
+            </Select>
+          </Item>
+
+          {/* Amount */}
+          <Item
             label="Amount"
             name="amount"
             rules={[
               { required: true, message: "Please enter an amount" },
-              {
-                type: "number",
-                min: 0.01,
-                message: "Amount must be greater than 0",
-              },
+              { type: "number", min: 0.01, message: "Amount must be greater than 0" },
             ]}
           >
             <InputNumber
@@ -253,18 +317,18 @@ const TransactionForm = () => {
               }
               parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
             />
-          </Form.Item>
+          </Item>
+
+          {/* Date */}
           <Item
             label="Date"
             name="date"
             rules={[{ required: true, message: "Please select a date" }]}
           >
-            <DatePicker
-              format="DD/MM/YYYY"
-              style={{ width: "100%" }}
-              size="large"
-            />
+            <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} size="large" />
           </Item>
+
+          {/* Time */}
           <Item
             label="Time"
             name="time"
@@ -279,17 +343,10 @@ const TransactionForm = () => {
               size="large"
             />
           </Item>
+
+          {/* Submit Button */}
           <Item style={{ marginTop: "1.5rem" }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              size="large"
-              block
-              style={{
-                borderRadius: 8,
-                transition: "opacity 0.3s ease",
-              }}
-            >
+            <Button type="primary" htmlType="submit" size="large" block>
               Submit
             </Button>
           </Item>
