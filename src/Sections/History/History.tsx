@@ -155,7 +155,7 @@ function History() {
           placeholder="Search by name, type, amount, collection or transaction mode"
           onChange={(e) => setSearchText(e.target.value)}
           value={searchText}
-          style={{ width: 500}}
+          style={{ maxWidth: 500}}
         />
       </div>
       <Table

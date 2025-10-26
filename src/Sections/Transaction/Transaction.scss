@@ -74,9 +74,6 @@
 
   /* 📱 Mobile (768px and below) */
   @media (max-width: 768px) {
-    .expense_header {
-
-    }
     .collection_balance {
       flex-direction: column;
       align-items: flex-start;
@@ -87,17 +84,14 @@
 
     .expense_list {
       gap: 0.8rem;
-
       .expense_item {
         flex-direction: column;
-        text-align: center;
         padding: 1rem;
         gap: 0.8rem;
-
+        margin: 0;
         .expense_item-amount {
           font-size: 1.2rem;
         }
-
         .expense_item-action {
           justify-content: center;
           gap: 0.8rem;
