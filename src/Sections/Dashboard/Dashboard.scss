@@ -173,50 +173,48 @@
       padding: 1rem;
     }
     .dashboard_amount {
-      min-width: 100px;
-      max-width: 260px;
+      min-width: calc(100% - 5%);
+      max-width: calc(100% - 5%);
       .total_amount {
-        flex-direction: column;
-        align-items: flex-start;
-
         h3 {
           font-size: 2rem;
         }
       }
-
       .Transactions {
-        flex-direction: column;
         .Transactions_sections {
-          max-width: 220px;
+          max-width: calc(100% - 5%);
         }
       }
       .pie_chart {
-        max-width: 250px;
+        max-width: 100%;
         padding: 0;
         margin-top: 1rem;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 1rem;
         canvas {
-          max-width: 230px !important;
+          max-width: 100% !important;
           height: auto !important;
         }
       }
     }
     .expense {
-      min-width: 100px;
-      max-width: 260px;
+      max-width: calc(100% - 5%);
+      max-width: calc(100% - 5%);
       p {
         font-size: 1.4rem;
       }
+      .Transactions {
+        flex-direction: column;
+      }
       .expense_transaction {
-        width: 180px;
+        width: calc(100% - 5%);
       }
       .expense_transaction_header,
       .expense_transaction {
         grid-template-columns: 1.5fr 1fr 1fr;
         gap: 0.5rem;
-        min-width: 220px;
-        max-width: 220px;
+        min-width: calc(100% - 5%);
+        max-width: calc(100% - 5%);
         div:last-child {
           display: none; // hide type icon on very small screens
         }
