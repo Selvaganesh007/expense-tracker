@@ -66,7 +66,6 @@
       .Transactions_sections {
         flex: 1;
         min-width: 180px;
-
         .label {
           display: flex;
           justify-content: space-between;
@@ -89,7 +88,6 @@
       background: rgba(255, 255, 255, 0.05);
       padding: 1rem;
       border-radius: 1rem;
-
       canvas {
         width: 100% !important;
         height: auto !important;
@@ -170,9 +168,13 @@
 
   /* Mobile View */
   @media (max-width: 768px) {
-    padding: 1rem;
-
+    padding: 0.1rem;
+    .glass-card {
+      padding: 1rem;
+    }
     .dashboard_amount {
+      min-width: 100px;
+      max-width: 260px;
       .total_amount {
         flex-direction: column;
         align-items: flex-start;
@@ -184,23 +186,37 @@
 
       .Transactions {
         flex-direction: column;
+        .Transactions_sections {
+          max-width: 220px;
+        }
       }
-
       .pie_chart {
-        margin-top: 1.5rem;
+        max-width: 250px;
+        padding: 0;
+        margin-top: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 1rem;
+        canvas {
+          max-width: 230px !important;
+          height: auto !important;
+        }
       }
     }
-
     .expense {
+      min-width: 100px;
+      max-width: 260px;
       p {
         font-size: 1.4rem;
       }
-
+      .expense_transaction {
+        width: 180px;
+      }
       .expense_transaction_header,
       .expense_transaction {
         grid-template-columns: 1.5fr 1fr 1fr;
         gap: 0.5rem;
-
+        min-width: 220px;
+        max-width: 220px;
         div:last-child {
           display: none; // hide type icon on very small screens
         }
