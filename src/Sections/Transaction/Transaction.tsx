@@ -9,7 +9,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  documentId,
   getDocs,
   query,
   where,
@@ -21,8 +20,7 @@ export interface ExpenseType {
   transactionID: number;
   name: string;
   type: string;
-  date: string;
-  time: string;
+  datetime: string;
   amount: string;
 }
 
@@ -245,12 +243,8 @@ function Transaction() {
           <div key={exp.id} className="expense_item">
             <div>{exp.name}</div>
             <div>{exp.type}</div>
-            <div>
-              {exp.date} {exp.time}
-            </div>
-            <div className="expense_item-amount">
-              {currency} {exp.amount}
-            </div>
+            <div>{exp.updated_at}</div>
+            <div className="expense_item-amount">{currency} {exp.amount}</div>
             <div className="expense_item-action">
               <Button
                 type="primary"

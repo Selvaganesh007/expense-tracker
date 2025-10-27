@@ -49,3 +49,22 @@
     }
   }
 }
+
+/* 📱 Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .collection {
+    .collection_header {
+      display: flex;
+      flex-direction: column;
+      margin: 0rem;
+    }
+    .collection_list {
+      display: flex;
+      flex-direction: column;
+      .collection_item {
+        width: 17rem;
+        margin: 1rem 0;
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { AppContext } from "../../Context/AppContext";
 import { CiLogout } from "react-icons/ci";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoClose } from "react-icons/io5";
+import { Avatar } from "antd";
 
 const NAVBAR_ITEMS = [
   {
@@ -81,7 +82,7 @@ function Navbar() {
           className="profile-photo"
           src={profileDetails?.picture}
           alt="Profile"
-        /> : ''}
+        /> : <Avatar style={{ backgroundColor: '#fde3cf', color: '#f56a00' }}>{profileDetails?.name.trim()[0].toUpperCase()}</Avatar>}
       </div>
     </nav>
   );
