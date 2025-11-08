@@ -3,6 +3,7 @@ import { Button, Card } from "antd";
 
 export const AuthContainer = styled.div`
   padding: 0 20px;
+  height: 100vh;
 `;
 
 export const FormElementContainer = styled.div`

@@ -78,11 +78,23 @@ function Navbar() {
       </div>
       <div className="profile">
         <h5 className="profile_name">{profileDetails?.name}</h5>
-        {profileDetails?.picture !='' ? <img
-          className="profile-photo"
-          src={profileDetails?.picture}
-          alt="Profile"
-        /> : <Avatar style={{ backgroundColor: '#fde3cf', color: '#f56a00' }}>{profileDetails?.name.trim()[0].toUpperCase()}</Avatar>}
+        {profileDetails?.picture ? (
+          <img
+            className="profile-photo"
+            src={profileDetails?.picture}
+            alt="Profile"
+          />
+        ) : (
+          <Avatar
+            style={{
+              backgroundColor: "#fde3cf",
+              color: "#18120eff",
+              fontWeight: "700",
+            }}
+          >
+            {profileDetails?.name?.trim()?.[0]?.toUpperCase()}
+          </Avatar>
+        )}
       </div>
     </nav>
   );
