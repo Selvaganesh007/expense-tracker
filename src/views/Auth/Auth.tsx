@@ -25,18 +25,15 @@ function Auth() {
       // console.log("Decoded JWT:", decoded);
     }
   }, []);
-  
+
   return (
     <AuthContainer>
-      <Flex vertical>
-        <Typography.Title>Expense Tracker</Typography.Title>
-        <Flex
-          style={{ display: "flex", flexDirection: "column" }}
-          align="center"
-          justify="center"
-        >
-          <SignInContainer />
-        </Flex>
+      <Flex
+        style={{ display: "flex", flexDirection: "column", height: "100vh" }}
+        align="center"
+        justify="center"
+      >
+        <SignInContainer />
       </Flex>
     </AuthContainer>
   );

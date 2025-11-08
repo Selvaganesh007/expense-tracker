@@ -143,7 +143,9 @@ const TransactionForm = () => {
       form.resetFields();
       setDocId("");
       navigate(`/collection/${id}`);
-      messageApi.success(`Transaction ${isNew ? "added" : "updated"} successfully.`);
+      messageApi.success(
+        `Transaction ${isNew ? "added" : "updated"} successfully.`
+      );
     } catch (err) {
       console.error("Error submitting transaction:", err);
       messageApi.error(`Failed to ${isNew ? "add" : "update"} transaction.`);
@@ -215,7 +217,9 @@ const TransactionForm = () => {
           <Item
             label="Cash Flow Type"
             name="cashFlowType"
-            rules={[{ required: true, message: "Please select cash flow type" }]}
+            rules={[
+              { required: true, message: "Please select cash flow type" },
+            ]}
           >
             <Radio.Group
               size="large"
@@ -231,8 +235,9 @@ const TransactionForm = () => {
                 style={{
                   flex: 1,
                   textAlign: "center",
-                  backgroundColor: "#16a34a",
-                  color: "white",
+                  backgroundColor:
+                    selectedCashFlow === "income" ? "#16a34a" : "#fff",
+                  color: selectedCashFlow === "income" ? "#fff" : "#16a34a",
                 }}
               >
                 Income
@@ -242,8 +247,9 @@ const TransactionForm = () => {
                 style={{
                   flex: 1,
                   textAlign: "center",
-                  backgroundColor: "#dc2626",
-                  color: "white",
+                  backgroundColor:
+                    selectedCashFlow === "expense" ? "#dc2626" : "#fff",
+                  color: selectedCashFlow === "expense" ? "#fff" : "#dc2626",
                 }}
               >
                 Expense
@@ -269,8 +275,8 @@ const TransactionForm = () => {
               options={(selectedCashFlow === "income"
                 ? incomeTypes
                 : selectedCashFlow === "expense"
-                  ? expenseTypes
-                  : []
+                ? expenseTypes
+                : []
               ).map((item) => ({
                 label: item,
                 value: item,
@@ -286,10 +292,12 @@ const TransactionForm = () => {
               showSearch
               optionFilterProp="label"
               options={transactionModes.map((item) => {
-                return ({
-                label: item,
-                value: item,
-              })})} />
+                return {
+                  label: item,
+                  value: item,
+                };
+              })}
+            />
           </Item>
 
           {/* Amount */}
@@ -298,7 +306,11 @@ const TransactionForm = () => {
             name="amount"
             rules={[
               { required: true, message: "Please enter an amount" },
-              { type: "number", min: 0.01, message: "Amount must be greater than 0" },
+              {
+                type: "number",
+                min: 0.01,
+                message: "Amount must be greater than 0",
+              },
             ]}
           >
             <InputNumber
@@ -320,7 +332,11 @@ const TransactionForm = () => {
             name="date"
             rules={[{ required: true, message: "Please select a date" }]}
           >
-            <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} size="large" />
+            <DatePicker
+              format="DD/MM/YYYY"
+              style={{ width: "100%" }}
+              size="large"
+            />
           </Item>
 
           {/* Time */}

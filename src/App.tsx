@@ -11,6 +11,7 @@ import Settings from "./Sections/SettingsModule/Settings";
 import Transaction from "./Sections/Transaction/Transaction";
 import ExpenseForm from "./containers/TransactionForm";
 import Logout from "./views/Auth/log-out/Logout";
+import ForgotPassword from "./views/Auth/forgot-password/ForgotPassword";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/sign-in" element={<Auth />} />
         <Route path="/sign-up" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

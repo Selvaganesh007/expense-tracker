@@ -113,6 +113,7 @@ function SignInContainer() {
           "Account created successfully! Please check your inbox/spam for verification email."
         );
       }
+      navigate("/sign-in");
     } catch (error: any) {
       console.error("Sign-up error:", error.message);
     }
@@ -162,7 +163,7 @@ function SignInContainer() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer style={{ borderRadius: "10px" }}>
       {contextHolder}
       <AuthCard
         title={location.pathname.includes("sign-in") ? "Sign In" : "Sign Up"}
@@ -202,6 +203,17 @@ function SignInContainer() {
           >
             <Input.Password placeholder="Password" />
           </Form.Item>
+          {isSignInPage && (
+            <div style={{ textAlign: "right", marginBottom: 16 }}>
+              <Button
+                type="link"
+                style={{ padding: 0 }}
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot Password?
+              </Button>
+            </div>
+          )}
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
