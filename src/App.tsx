@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Base from "./Base";
 import Auth from "./views/Auth/Auth";
@@ -12,14 +12,50 @@ import Transaction from "./Sections/Transaction/Transaction";
 import ExpenseForm from "./containers/TransactionForm";
 import Logout from "./views/Auth/log-out/Logout";
 import ForgotPassword from "./views/Auth/forgot-password/ForgotPassword";
+import { useAppDispatch } from "./redux/store";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
+import {
+  clearUserInfo,
+  setInfoLoader,
+  setUserInfo,
+} from "./redux/auth/authSlice";
+import { useEffect } from "react";
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(setInfoLoader(true));
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch(
+          setUserInfo({
+            user_id: user.uid!,
+            email: user.email!,
+            display_name: user.displayName!,
+            photoURL: user.photoURL!,
+            emailVerified: user.emailVerified!,
+          })
+        );
+      } else {
+        dispatch(clearUserInfo());
+      }
+      dispatch(setInfoLoader(false));
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to sign-in */}
-        <Route path="/" element={<Navigate to="/sign-in" replace />} />
-        {/* Protected Base Layout */}
+        {/* PUBLIC ROUTES */}
+        <Route path="/sign-in" element={<Auth />} />
+        <Route path="/sign-up" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        {/* PROTECTED ROUTES */}
         <Route
           path="/"
           element={
@@ -37,11 +73,6 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="log-out" element={<Logout />} />
         </Route>
-
-        {/* Auth Routes */}
-        <Route path="/sign-in" element={<Auth />} />
-        <Route path="/sign-up" element={<Auth />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

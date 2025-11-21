@@ -17,6 +17,7 @@ import { MdDelete, MdEditSquare } from "react-icons/md";
 import { db } from "../../../firebase";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { useNavigate } from "react-router-dom";
+import Loader from "../../helpers/Loader";
 
 const { Search } = Input;
 
@@ -44,6 +45,7 @@ function Collection() {
   const [collectionList, setCollectionList] = useState<Record<string, any>[]>(
     []
   );
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (profileDetails.user_id) getCollectionList();
@@ -66,8 +68,8 @@ function Collection() {
     if (profileDetails.user_id) getCollectionList();
   }, [profileDetails.user_id, debouncedSearchText]);
 
-
   const getCollectionList = async () => {
+    setLoading(true);
     const usersRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
     const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
     const querySnapshot = await getDocs(q);
@@ -104,13 +106,16 @@ function Collection() {
     );
 
     setCollectionList(withBalances);
+    setLoading(false);
   };
-
 
   const getCollectionBalance = async (collectionId: string) => {
     try {
       const transactionRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
-      const q = query(transactionRef, where("collection_id", "==", collectionId));
+      const q = query(
+        transactionRef,
+        where("collection_id", "==", collectionId)
+      );
       const querySnapshot = await getDocs(q);
 
       let income = 0;
@@ -161,7 +166,6 @@ function Collection() {
     getCollectionList();
   };
 
-
   const onEditClick = (item: any) => {
     setCollectionDetails({
       name: item.name,
@@ -171,7 +175,6 @@ function Collection() {
     setEditId(item.id);
     setDrawerOpen(true);
   };
-
 
   const handleChange = (field: string, value: any) => {
     setCollectionDetails({
@@ -189,71 +192,86 @@ function Collection() {
 
   return (
     <div className="collection">
-      <div className="collection_header">
-        <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-          Collection List
-        </div>
-        <Search
-          placeholder="Search by collection name"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 200, marginRight: 16 }}
-        />
-        <Button type="primary" onClick={onAddClick}>
-          Add collection
-        </Button>
-      </div>
-      <div className="collection_list">
-        {collectionList.map((value, id) => {
-          return (
-            <div
-              key={id}
-              className="collection_item"
-              onClick={() => {
-                navigate(`/collection/${encodeURIComponent(value.id)}`);
-              }}
-            >
-              <div className="collection_item_header">
-                <h4 className="collection_name">{value.name}</h4>
-                <div className="collection_item-action">
-                  <Button
-                    type="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditClick(value);
-                    }}
-                  >
-                    <MdEditSquare />
-                  </Button>
-                  <Button type="primary" onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteClick(value.id);
-                  }} danger>
-                    <MdDelete />
-                  </Button>
-                </div>
-              </div>
-              <h4>Balance: ₹{value.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h4>
-              <h4>Updated on: {value.updated_at}</h4>
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <div className="collection_header">
+            <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+              Collection List
             </div>
-          );
-        })}
-      </div>
-      <Modal
-        title={isEdit ? "Edit Collection" : "Add New Collection"}
-        closable={{ "aria-label": "Custom Close Button" }}
-        open={drawerOpen}
-        onOk={() => onCollectionAdd()}
-        onCancel={onDrawerClose}
-        maskClosable={false}
-      >
-        <label>Name</label>
-        <Input
-          placeholder="Expense name"
-          value={collectionDetails.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-        />
-      </Modal>
+            <Search
+              placeholder="Search by collection name"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 200, marginRight: 16 }}
+            />
+            <Button type="primary" onClick={onAddClick}>
+              Add collection
+            </Button>
+          </div>
+          <div className="collection_list">
+            {collectionList.map((value, id) => {
+              return (
+                <div
+                  key={id}
+                  className="collection_item"
+                  onClick={() => {
+                    navigate(`/collection/${encodeURIComponent(value.id)}`);
+                  }}
+                >
+                  <div className="collection_item_header">
+                    <h4 className="collection_name">{value.name}</h4>
+                    <div className="collection_item-action">
+                      <Button
+                        type="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditClick(value);
+                        }}
+                      >
+                        <MdEditSquare />
+                      </Button>
+                      <Button
+                        type="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteClick(value.id);
+                        }}
+                        danger
+                      >
+                        <MdDelete />
+                      </Button>
+                    </div>
+                  </div>
+                  <h4>
+                    Balance: ₹
+                    {value.balance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                  </h4>
+                  <h4>Updated on: {value.updated_at}</h4>
+                </div>
+              );
+            })}
+          </div>
+          <Modal
+            title={isEdit ? "Edit Collection" : "Add New Collection"}
+            closable={{ "aria-label": "Custom Close Button" }}
+            open={drawerOpen}
+            onOk={() => onCollectionAdd()}
+            onCancel={onDrawerClose}
+            maskClosable={false}
+          >
+            <label>Name</label>
+            <Input
+              placeholder="Expense name"
+              value={collectionDetails.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+            />
+          </Modal>
+        </>
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import Loader from "../../helpers/Loader";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -34,13 +35,16 @@ function Transaction() {
   const [incomeTypeFilter, setIncomeTypeFilter] = useState("");
   const [transactionModeFilter, setTransactionModeFilter] = useState("");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
+  const [transactionList, setTransactionList] = useState<Record<string, any>[]>(
+    []
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
   const [incomeTypes, setIncomeTypes] = useState<string[]>([]);
   const [expenseTypes, setExpenseTypes] = useState<string[]>([]);
   const [transactionModes, setTransactionModes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (profileDetails.user_id) getTransactionList();
@@ -78,7 +82,7 @@ function Transaction() {
       if (!snapshot.empty) {
         const userDoc = snapshot.docs[0];
         const settings = userDoc.data().settings || {};
-        setCurrency(settings.currency[0])
+        setCurrency(settings.currency[0]);
         setIncomeTypes(settings.income || []);
         setExpenseTypes(settings.expense || []);
         setTransactionModes(settings.transactionMode || []);
@@ -90,6 +94,7 @@ function Transaction() {
   };
 
   const getTransactionList = async () => {
+    setLoading(true);
     const usersRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
     const q = query(
       usersRef,
@@ -126,6 +131,7 @@ function Transaction() {
     setIncomeTotal(income);
     setExpenseTotal(expense);
     setTransactionList(result);
+    setLoading(false);
   };
 
   const onDelete = async (transactionId: string) => {
@@ -151,14 +157,17 @@ function Transaction() {
       exp.amount.toString().includes(debouncedSearchText);
 
     const matchesExpenseType =
-      !expenseTypeFilter || exp.type?.toLowerCase() === expenseTypeFilter.toLowerCase();
+      !expenseTypeFilter ||
+      exp.type?.toLowerCase() === expenseTypeFilter.toLowerCase();
 
     const matchesIncomeType =
-      !incomeTypeFilter || exp.type?.toLowerCase() === incomeTypeFilter.toLowerCase();
+      !incomeTypeFilter ||
+      exp.type?.toLowerCase() === incomeTypeFilter.toLowerCase();
 
     const matchesTransactionMode =
       !transactionModeFilter ||
-      exp.transactionMode?.toLowerCase() === transactionModeFilter.toLowerCase();
+      exp.transactionMode?.toLowerCase() ===
+        transactionModeFilter.toLowerCase();
 
     return (
       matchesSearch &&
@@ -170,95 +179,113 @@ function Transaction() {
 
   return (
     <div className="expense">
-      <div className="expense_header">
-        <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-          Transactions List
-        </div>
-        <Search
-          placeholder="Search by name or amount"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 200, marginRight: 16 }}
-        />
-        <Select
-          placeholder="Filter by expense type"
-          allowClear
-          value={expenseTypeFilter || undefined}
-          onChange={(value) => setExpenseTypeFilter(value || "")}
-          style={{ width: 180, marginRight: 16 }}
-        >
-          {expenseTypes.map((type: any) => (
-            <Option key={type} value={type}>
-              {type}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          placeholder="Filter by income type"
-          allowClear
-          value={incomeTypeFilter || undefined}
-          onChange={(value) => setIncomeTypeFilter(value || "")}
-          style={{ width: 180, marginRight: 16 }}
-        >
-          {incomeTypes.map((type: any) => (
-            <Option key={type} value={type}>
-              {type}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          placeholder="Filter by transaction mode"
-          allowClear
-          value={transactionModeFilter || undefined}
-          onChange={(value) => setTransactionModeFilter(value || "")}
-          style={{ width: 180, marginRight: 16 }}
-        >
-          {transactionModes.map((type: any) => (
-            <Option key={type} value={type}>
-              {type}
-            </Option>
-          ))}
-        </Select>
-        <Button
-          type="primary"
-          onClick={() => {
-            navigate(`/collection/${id}/new`);
-          }}
-        >
-          Add Transaction
-        </Button>
-      </div>
-      <div className="collection_balance">
-        <div className="balance_IN">Total Income: {currency} {incomeTotal.toLocaleString()}</div>
-        <div className="balance_OUT">Total Expense: {currency} {expenseTotal.toLocaleString()}</div>
-        <div className="balance_amount">
-          Balance: {currency} {(incomeTotal - expenseTotal).toLocaleString()}
-        </div>
-      </div>
-      <div className="expense_list">
-        {filteredTransaction.length === 0 && (
-          <p>Transaction doesn't match your search/filter.</p>
-        )}
-        {filteredTransaction.map((exp: any) => (
-          <div key={exp.id} className="expense_item">
-            <div>{exp.name}</div>
-            <div>{exp.type}</div>
-            <div>{exp.updated_at}</div>
-            <div className="expense_item-amount">{currency} {exp.amount}</div>
-            <div className="expense_item-action">
-              <Button
-                type="primary"
-                onClick={() => navigate(`/collection/${id}/${exp.id}`)}
-              >
-                Edit
-              </Button>
-              <Button type="primary" danger loading={deletingId === exp.id} onClick={() => onDelete(exp.id)}>
-                Delete
-              </Button>
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <div className="expense_header">
+            <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+              Transactions List
+            </div>
+            <Search
+              placeholder="Search by name or amount"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 200, marginRight: 16 }}
+            />
+            <Select
+              placeholder="Filter by expense type"
+              allowClear
+              value={expenseTypeFilter || undefined}
+              onChange={(value) => setExpenseTypeFilter(value || "")}
+              style={{ width: 180, marginRight: 16 }}
+            >
+              {expenseTypes.map((type: any) => (
+                <Option key={type} value={type}>
+                  {type}
+                </Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Filter by income type"
+              allowClear
+              value={incomeTypeFilter || undefined}
+              onChange={(value) => setIncomeTypeFilter(value || "")}
+              style={{ width: 180, marginRight: 16 }}
+            >
+              {incomeTypes.map((type: any) => (
+                <Option key={type} value={type}>
+                  {type}
+                </Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Filter by transaction mode"
+              allowClear
+              value={transactionModeFilter || undefined}
+              onChange={(value) => setTransactionModeFilter(value || "")}
+              style={{ width: 180, marginRight: 16 }}
+            >
+              {transactionModes.map((type: any) => (
+                <Option key={type} value={type}>
+                  {type}
+                </Option>
+              ))}
+            </Select>
+            <Button
+              type="primary"
+              onClick={() => {
+                navigate(`/collection/${id}/new`);
+              }}
+            >
+              Add Transaction
+            </Button>
+          </div>
+          <div className="collection_balance">
+            <div className="balance_IN">
+              Total Income: {currency} {incomeTotal.toLocaleString()}
+            </div>
+            <div className="balance_OUT">
+              Total Expense: {currency} {expenseTotal.toLocaleString()}
+            </div>
+            <div className="balance_amount">
+              Balance: {currency}{" "}
+              {(incomeTotal - expenseTotal).toLocaleString()}
             </div>
           </div>
-        ))}
-      </div>
+          <div className="expense_list">
+            {filteredTransaction.length === 0 && (
+              <p>Transaction doesn't match your search/filter.</p>
+            )}
+            {filteredTransaction.map((exp: any) => (
+              <div key={exp.id} className="expense_item">
+                <div>{exp.name}</div>
+                <div>{exp.type}</div>
+                <div>{exp.updated_at}</div>
+                <div className="expense_item-amount">
+                  {currency} {exp.amount}
+                </div>
+                <div className="expense_item-action">
+                  <Button
+                    type="primary"
+                    onClick={() => navigate(`/collection/${id}/${exp.id}`)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="primary"
+                    danger
+                    loading={deletingId === exp.id}
+                    onClick={() => onDelete(exp.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
