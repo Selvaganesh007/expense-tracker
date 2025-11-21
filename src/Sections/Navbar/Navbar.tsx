@@ -9,7 +9,8 @@ import { AppContext } from "../../Context/AppContext";
 import { CiLogout } from "react-icons/ci";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoClose } from "react-icons/io5";
-import { Avatar } from "antd";
+import { Avatar, Tooltip } from "antd";
+import { useAppSelector } from "../../redux/store";
 
 const NAVBAR_ITEMS = [
   {
@@ -40,7 +41,7 @@ const NAVBAR_ITEMS = [
 ];
 
 function Navbar() {
-  const { profileDetails } = useContext(AppContext);
+  const { currentUser } = useAppSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
@@ -76,26 +77,27 @@ function Navbar() {
           </NavLink>
         ))}
       </div>
-      <div className="profile">
-        <h5 className="profile_name">{profileDetails?.name}</h5>
-        {profileDetails?.picture ? (
-          <img
-            className="profile-photo"
-            src={profileDetails?.picture}
-            alt="Profile"
-          />
-        ) : (
-          <Avatar
-            style={{
-              backgroundColor: "#fde3cf",
-              color: "#18120eff",
-              fontWeight: "700",
-            }}
-          >
-            {profileDetails?.name?.trim()?.[0]?.toUpperCase()}
-          </Avatar>
-        )}
-      </div>
+      <Tooltip title={currentUser?.display_name}>
+        <div className="profile">
+          {currentUser?.photoURL ? (
+            <img
+              className="profile-photo"
+              src={currentUser?.photoURL}
+              alt="Profile"
+            />
+          ) : (
+            <Avatar
+              style={{
+                backgroundColor: "#fde3cf",
+                color: "#18120eff",
+                fontWeight: "700",
+              }}
+            >
+              {currentUser?.display_name?.trim()?.[0]?.toUpperCase()}
+            </Avatar>
+          )}
+        </div>
+      </Tooltip>
     </nav>
   );
 }

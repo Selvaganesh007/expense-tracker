@@ -6,15 +6,12 @@ import {
   SwitchText,
 } from "../views/Auth/index.styles";
 import {
-  createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendEmailVerification,
-  signInWithEmailAndPassword,
-  signInWithPopup,
   updateProfile,
-  User,
+  User as FirebaseUser,
 } from "firebase/auth";
-import { auth, db, provider } from "../../firebase";
+import { auth, db } from "../../firebase";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   addDoc,
@@ -25,6 +22,13 @@ import {
   where,
 } from "firebase/firestore";
 import { settings } from "../Utils/common";
+import {
+  signInWithGoogle,
+  signUpWithEmailPassword,
+  signWithEmailPassword,
+} from "../services/auth.service";
+import { useAppDispatch } from "../redux/store";
+import { localStorageSetItem } from "../Utils/localstorageUtils";
 
 interface SignInForm {
   fullName?: string;
@@ -35,6 +39,7 @@ interface SignInForm {
 function SignInContainer() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
   const isSignInPage = location.pathname.includes("sign-in");
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
@@ -53,9 +58,9 @@ function SignInContainer() {
     }
   }
 
-  const handleAddUsers = async (user: User, fullName?: string) => {
+  const handleAddUsers = async (user: FirebaseUser, fullName?: string) => {
     const firebaseToken = await user.getIdToken();
-    localStorage.setItem("firebaseToken", firebaseToken);
+    localStorageSetItem("firebaseToken", firebaseToken);
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const res = await getUserByUserId(user.uid);
@@ -79,10 +84,10 @@ function SignInContainer() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const result: any = await dispatch(signInWithGoogle());
+      const user: FirebaseUser = result.payload;
       await handleAddUsers(user);
-      navigate("/dashboard");
+      await navigate("/dashboard");
     } catch (error) {
       console.error("Sign-in error:", error);
     }
@@ -99,12 +104,13 @@ function SignInContainer() {
 
   const handleSignUp = async (val: SignInForm) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        val.email,
-        val.password
+      const userCredential: any = await dispatch(
+        signUpWithEmailPassword({
+          email: val.email,
+          password: val.password,
+        })
       );
-      const user = userCredential.user;
+      const user: FirebaseUser = userCredential.payload;
       await updateProfile(user, { displayName: val?.fullName });
       await handleAddUsers(user, val?.fullName);
       if (user) {
@@ -121,12 +127,8 @@ function SignInContainer() {
 
   const handleSignIn = async (val: { email: string; password: string }) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        val.email,
-        val.password
-      );
-      const user = userCredential.user;
+      const result: any = await dispatch(signWithEmailPassword(val));
+      const user: FirebaseUser = result.payload;
       console.log("Signed in:", user);
       if (!user.emailVerified) {
         messageApi.warning(
