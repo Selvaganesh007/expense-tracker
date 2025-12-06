@@ -41,8 +41,8 @@ function Dashboard() {
 
     setCollections(list);
     if (list.length > 0) {
-      setSelectedCollection(list[0].id); // pick recent one
-      fetchTransactions(list[0].id);
+      setSelectedCollection(list[list.length - 1].id); // pick recent one
+      fetchTransactions(list[list.length - 1].id);
     }
     setLoading(false);
   };
@@ -50,6 +50,10 @@ function Dashboard() {
   useEffect(() => {
     if (profileDetails.currentUser.user_id) fetchCollections();
   }, [profileDetails.currentUser]);
+
+  useEffect(() => {
+    if (selectedCollection) fetchTransactions();
+  }, [selectedCollection]);
 
   const fetchTransactions = async (collectionId?: string) => {
     setLoading(true);
@@ -82,43 +86,38 @@ function Dashboard() {
     (sum, t: any) => sum + Number(t.amount || 0),
     0
   );
-  const balance = totalIncome - totalSpending;
 
-  const expenseByType = expenses.reduce((acc: any, exp: any) => {
-    acc[exp.type] = (acc[exp.type] || 0) + Number(exp.amount);
-    return acc;
-  }, {});
+  const handlePieChart = () => {
+    const expenseByType = expenses.reduce((acc: any, exp: any) => {
+      acc[exp.type] = (acc[exp.type] || 0) + Number(exp.amount);
+      return acc;
+    }, {});
 
-  const pieData = {
-    labels: Object.keys(expenseByType),
-    datasets: [
-      {
-        label: "Expenses",
-        data: Object.values(expenseByType),
-        backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-          "#C9CBCF",
-          "#00FF99",
-          "#FF66FF",
-        ],
-        borderColor: "#fff",
-        borderWidth: 1,
-      },
-    ],
+    const pieData = {
+      labels: Object.keys(expenseByType),
+      datasets: [
+        {
+          label: "Expenses",
+          data: Object.values(expenseByType),
+          backgroundColor: [
+            "#FF6384",
+            "#36A2EB",
+            "#FFCE56",
+            "#4BC0C0",
+            "#9966FF",
+            "#FF9F40",
+            "#C9CBCF",
+            "#00FF99",
+            "#FF66FF",
+          ],
+          borderColor: "#fff",
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    return pieData;
   };
-
-  const allTransactions = [...transactions]
-    .sort((a, b) => {
-      const dateTimeA: any = dayjs(`${a.date} ${a.time}`);
-      const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
-      return dateTimeB - dateTimeA;
-    })
-    .slice(0, 10);
 
   return (
     <div className="dashboard">
@@ -179,7 +178,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="pie_chart glass-card">
-              <Pie data={pieData} />
+              <Pie data={handlePieChart()} />
             </div>
           </div>
           <div className="expense glass-card">
@@ -190,23 +189,30 @@ function Dashboard() {
               <div>Amount</div>
               <div>Type</div>
             </div>
-            {allTransactions.map((tx, idx) => (
-              <div key={idx} className="expense_transaction glass-card">
-                <div>{tx.name}</div>
-                <div>{tx.type}</div>
-                <div>
-                  {currency}
-                  {tx.amount}
+            {[...transactions]
+              .sort((a, b) => {
+                const dateTimeA: any = dayjs(`${a.date} ${a.time}`);
+                const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
+                return dateTimeB - dateTimeA;
+              })
+              .slice(0, 10)
+              .map((tx, idx) => (
+                <div key={idx} className="expense_transaction glass-card">
+                  <div>{tx.name}</div>
+                  <div>{tx.type}</div>
+                  <div>
+                    {currency}
+                    {tx.amount}
+                  </div>
+                  <div>
+                    {tx.cashFlowType === "expense" ? (
+                      <FaMoneyBillTrendUp />
+                    ) : (
+                      <GiTakeMyMoney />
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {tx.cashFlowType === "expense" ? (
-                    <FaMoneyBillTrendUp />
-                  ) : (
-                    <GiTakeMyMoney />
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </>
       )}

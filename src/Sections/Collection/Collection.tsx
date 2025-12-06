@@ -18,6 +18,8 @@ import { db } from "../../../firebase";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../helpers/Loader";
+import { useAppSelector } from "../../redux/store";
+import { UserState } from "../../redux/auth/authSlice";
 
 const { Search } = Input;
 
@@ -33,7 +35,7 @@ export interface CollectionType {
 
 function Collection() {
   const navigate = useNavigate();
-  const { profileDetails } = useContext(AppContext);
+  const profileDetails: UserState = useAppSelector((state) => state.auth);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -48,8 +50,8 @@ function Collection() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (profileDetails.user_id) getCollectionList();
-  }, [profileDetails.user_id]);
+    if (profileDetails.currentUser.user_id) getCollectionList();
+  }, [profileDetails.currentUser.user_id]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -65,13 +67,16 @@ function Collection() {
   };
 
   useEffect(() => {
-    if (profileDetails.user_id) getCollectionList();
-  }, [profileDetails.user_id, debouncedSearchText]);
+    if (profileDetails.currentUser.user_id) getCollectionList();
+  }, [profileDetails.currentUser.user_id, debouncedSearchText]);
 
   const getCollectionList = async () => {
     setLoading(true);
     const usersRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
-    const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
+    const q = query(
+      usersRef,
+      where("user_id", "==", profileDetails.currentUser.user_id)
+    );
     const querySnapshot = await getDocs(q);
 
     // Fetch all collections
@@ -154,9 +159,12 @@ function Collection() {
         updated_at: serverTimestamp(),
       });
     } else {
+      console.log(profileDetails);
+
+      debugger;
       await addDoc(collection(db, DB_COLLECTION_NAMES.COLLECTION), {
         ...collectionDetails,
-        user_id: profileDetails.user_id,
+        user_id: profileDetails.currentUser.user_id,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp(),
       });
@@ -169,7 +177,7 @@ function Collection() {
   const onEditClick = (item: any) => {
     setCollectionDetails({
       name: item.name,
-      user_id: profileDetails.user_id,
+      user_id: profileDetails.currentUser.user_id,
     });
     setIsEdit(true);
     setEditId(item.id);

@@ -10,10 +10,13 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
 import Loader from "../../helpers/Loader";
+import { useAppSelector } from "../../redux/store";
+import { UserState } from "../../redux/auth/authSlice";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -28,7 +31,7 @@ export interface ExpenseType {
 function Transaction() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { profileDetails } = useContext(AppContext);
+  const profileDetails: UserState = useAppSelector((state) => state.auth);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
   const [currency, setCurrency] = useState("₹");
@@ -47,8 +50,8 @@ function Transaction() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (profileDetails.user_id) getTransactionList();
-  }, [profileDetails.user_id]);
+    if (profileDetails.currentUser.user_id) getTransactionList();
+  }, [profileDetails.currentUser.user_id]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -71,13 +74,16 @@ function Transaction() {
 
   useEffect(() => {
     fetchUserSettings();
-  }, [profileDetails.user_id]);
+  }, [profileDetails.currentUser.user_id]);
 
   const fetchUserSettings = async () => {
-    if (!profileDetails?.user_id) return;
+    if (!profileDetails?.currentUser.user_id) return;
     try {
       const usersRef = collection(db, DB_COLLECTION_NAMES.USERS);
-      const q = query(usersRef, where("user_id", "==", profileDetails.user_id));
+      const q = query(
+        usersRef,
+        where("user_id", "==", profileDetails.currentUser.user_id)
+      );
       const snapshot = await getDocs(q);
       if (!snapshot.empty) {
         const userDoc = snapshot.docs[0];
@@ -98,7 +104,7 @@ function Transaction() {
     const usersRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
     const q = query(
       usersRef,
-      where("user_id", "==", profileDetails.user_id),
+      where("user_id", "==", profileDetails.currentUser.user_id),
       where("collection_id", "==", id)
     );
     const querySnapshot = await getDocs(q);
