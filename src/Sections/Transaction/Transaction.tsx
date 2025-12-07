@@ -105,7 +105,8 @@ function Transaction() {
     const q = query(
       usersRef,
       where("user_id", "==", profileDetails.currentUser.user_id),
-      where("collection_id", "==", id)
+      where("collection_id", "==", id),
+      orderBy("created_at", "desc")
     );
     const querySnapshot = await getDocs(q);
     const result = querySnapshot.docs.map((doc) => {
