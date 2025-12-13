@@ -38,9 +38,7 @@ function Transaction() {
   const [incomeTypeFilter, setIncomeTypeFilter] = useState("");
   const [transactionModeFilter, setTransactionModeFilter] = useState("");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>(
-    []
-  );
+  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
@@ -106,7 +104,7 @@ function Transaction() {
       usersRef,
       where("user_id", "==", profileDetails.currentUser.user_id),
       where("collection_id", "==", id),
-      orderBy("created_at", "desc")
+      orderBy("datetime", "desc")
     );
     const querySnapshot = await getDocs(q);
     const result = querySnapshot.docs.map((doc) => {

@@ -204,15 +204,31 @@ const TransactionForm = () => {
             time: isNew ? dayjs() : undefined,
           }}
         >
-          {/* Name */}
+          {/* Amount */}
           <Item
-            label="Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter a name" }]}
+            label="Amount"
+            name="amount"
+            rules={[
+              { required: true, message: "Please enter an amount" },
+              {
+                type: "number",
+                min: 0.01,
+                message: "Amount must be greater than 0",
+              },
+            ]}
           >
-            <Input placeholder="Enter name" size="large" />
+            <InputNumber
+              placeholder="Enter amount"
+              size="large"
+              style={{ width: "100%" }}
+              min={0}
+              step={0.01}
+              formatter={(value) =>
+                `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
+            />
           </Item>
-
           {/* Cash Flow Type */}
           <Item
             label="Cash Flow Type"
@@ -256,6 +272,14 @@ const TransactionForm = () => {
               </Radio.Button>
             </Radio.Group>
           </Item>
+          {/* Name */}
+          <Item
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: "Please enter a name" }]}
+          >
+            <Input placeholder="Enter name" size="large" />
+          </Item>
 
           {/* Type Dropdown */}
           <Item
@@ -275,8 +299,8 @@ const TransactionForm = () => {
               options={(selectedCashFlow === "income"
                 ? incomeTypes
                 : selectedCashFlow === "expense"
-                ? expenseTypes
-                : []
+                  ? expenseTypes
+                  : []
               ).map((item) => ({
                 label: item,
                 value: item,
@@ -297,32 +321,6 @@ const TransactionForm = () => {
                   value: item,
                 };
               })}
-            />
-          </Item>
-
-          {/* Amount */}
-          <Item
-            label="Amount"
-            name="amount"
-            rules={[
-              { required: true, message: "Please enter an amount" },
-              {
-                type: "number",
-                min: 0.01,
-                message: "Amount must be greater than 0",
-              },
-            ]}
-          >
-            <InputNumber
-              placeholder="Enter amount"
-              size="large"
-              style={{ width: "100%" }}
-              min={0}
-              step={0.01}
-              formatter={(value) =>
-                `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
             />
           </Item>
 
