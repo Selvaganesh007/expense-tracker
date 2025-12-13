@@ -38,9 +38,7 @@ function Transaction() {
   const [incomeTypeFilter, setIncomeTypeFilter] = useState("");
   const [transactionModeFilter, setTransactionModeFilter] = useState("");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>(
-    []
-  );
+  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
