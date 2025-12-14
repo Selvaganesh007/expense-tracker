@@ -8,6 +8,8 @@ import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { db } from "../../../firebase";
 import { collection, getDocs, query, where, updateDoc, doc } from "firebase/firestore";
 
+import { CollectionType, ExpenseType } from "../../types";
+
 const { Option } = Select;
 
 interface TypeItem {
@@ -28,9 +30,9 @@ function Settings() {
 
   const [newExpenseType, setNewExpenseType] = useState("");
   const [newIncomeType, setNewIncomeType] = useState("");
-  const [collections, setCollections] = useState<any[]>([]);
+  const [collections, setCollections] = useState<CollectionType[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<ExpenseType[]>([]);
   const [settingsData, setSettingsData] = useState<SettingsData>();
 
   // 🔹 Selected current theme/currency
@@ -45,7 +47,22 @@ function Settings() {
       const colRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
       const q = query(colRef, where("user_id", "==", profileDetails.user_id));
       const snapshot = await getDocs(q);
-      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const list: CollectionType[] = snapshot.docs.map((doc) => {
+          const d = doc.data();
+          const createdAt = d.created_at?.seconds
+            ? new Date(d.created_at.seconds * 1000).toLocaleString()
+            : "-";
+          const updatedAt = d.updated_at?.seconds
+            ? new Date(d.updated_at.seconds * 1000).toLocaleString()
+            : "-";
+          return { 
+              id: doc.id,
+              name: d.name,
+              user_id: d.user_id,
+              created_at: createdAt,
+              updated_at: updatedAt
+          }; 
+      });
       setCollections(list);
       if (list.length > 0) setSelectedCollection(list[0].id);
     };
@@ -73,7 +90,28 @@ function Settings() {
       const txRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
       const q = query(txRef, where("collection_id", "==", selectedCollection));
       const snapshot = await getDocs(q);
-      const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const list: ExpenseType[] = snapshot.docs.map((doc) => {
+          const d = doc.data();
+          const createdAt = d.created_at?.seconds
+            ? new Date(d.created_at.seconds * 1000).toLocaleString()
+            : "-";
+          const updatedAt = d.updated_at?.seconds
+            ? new Date(d.updated_at.seconds * 1000).toLocaleString()
+            : "-";
+          return { 
+              id: doc.id, 
+              name: d.name,
+              type: d.type,
+              amount: Number(d.amount),
+              cashFlowType: d.cashFlowType,
+              transactionMode: d.transactionMode,
+              user_id: d.user_id,
+              collection_id: d.collection_id,
+              datetime: d.datetime, // keeping raw if needed or converted
+              created_at: createdAt,
+              updated_at: updatedAt
+          }; 
+      });
       setTransactions(list);
     };
     fetchTransactions();

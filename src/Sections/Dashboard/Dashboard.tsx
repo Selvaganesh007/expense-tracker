@@ -13,16 +13,18 @@ import { useAppSelector } from "../../redux/store";
 import { UserState } from "../../redux/auth/authSlice";
 import Loader from "../../helpers/Loader";
 
+import { CollectionType, ExpenseType } from "../../types";
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Dashboard() {
   const profileDetails: UserState = useAppSelector((state) => state.auth);
   const currency = "₹";
-  const [collections, setCollections] = useState<any[]>([]);
+  const [collections, setCollections] = useState<CollectionType[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string | null>(
     null
   );
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<ExpenseType[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchCollections = async () => {
@@ -34,10 +36,16 @@ function Dashboard() {
     );
     const snapshot = await getDocs(q);
 
-    const list = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const list: CollectionType[] = snapshot.docs.map((doc) => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        name: d.name,
+        user_id: d.user_id,
+        created_at: d.created_at?.seconds ? new Date(d.created_at.seconds * 1000).toLocaleString() : "-",
+        updated_at: d.updated_at?.seconds ? new Date(d.updated_at.seconds * 1000).toLocaleString() : "-",
+      };
+    });
 
     setCollections(list);
     if (list.length > 0) {
@@ -64,31 +72,43 @@ function Dashboard() {
     );
     const snapshot = await getDocs(q);
 
-    const list = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const list: ExpenseType[] = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        return {
+            id: doc.id,
+            name: d.name,
+            type: d.type,
+            amount: Number(d.amount),
+            cashFlowType: d.cashFlowType,
+            transactionMode: d.transactionMode,
+            user_id: d.user_id,
+            collection_id: d.collection_id,
+            datetime: d.datetime, // keep raw Fetch for sorting if needed, or convert
+            created_at: d.created_at?.seconds ? new Date(d.created_at.seconds * 1000).toLocaleString() : "-",
+            updated_at: d.updated_at?.seconds ? new Date(d.updated_at.seconds * 1000).toLocaleString() : "-"
+        };
+    });
 
     setTransactions(list);
     setLoading(false);
   };
 
   const expenses = transactions.filter(
-    (t: any) => t.cashFlowType === "expense"
+    (t: ExpenseType) => t.cashFlowType === "expense"
   );
-  const income = transactions.filter((t: any) => t.cashFlowType === "income");
+  const income = transactions.filter((t: ExpenseType) => t.cashFlowType === "income");
 
   const totalSpending = expenses.reduce(
-    (sum, t: any) => sum + Number(t.amount || 0),
+    (sum, t: ExpenseType) => sum + Number(t.amount || 0),
     0
   );
   const totalIncome = income.reduce(
-    (sum, t: any) => sum + Number(t.amount || 0),
+    (sum, t: ExpenseType) => sum + Number(t.amount || 0),
     0
   );
 
   const handlePieChart = () => {
-    const expenseByType = expenses.reduce((acc: any, exp: any) => {
+    const expenseByType = expenses.reduce((acc: Record<string, number>, exp: ExpenseType) => {
       acc[exp.type] = (acc[exp.type] || 0) + Number(exp.amount);
       return acc;
     }, {});
@@ -191,9 +211,12 @@ function Dashboard() {
             </div>
             {[...transactions]
               .sort((a, b) => {
-                const dateTimeA: any = dayjs(`${a.date} ${a.time}`);
-                const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
-                return dateTimeB - dateTimeA;
+                // If datetime is a Timestamp, convert it; if it's not present, handle gracefully.
+                // Assuming stored as Timestamp in older records or similar.
+                // Actually in fetchTransactions we kept datetime.
+                const dtA = a.datetime?.toDate ? a.datetime.toDate() : a.datetime;
+                const dtB = b.datetime?.toDate ? b.datetime.toDate() : b.datetime;
+                return dayjs(dtB).diff(dayjs(dtA));
               })
               .slice(0, 10)
               .map((tx, idx) => (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./Transaction.scss";
-import { Button, Input, Select } from "antd";
+import { Button, Input, Select, Table } from "antd";
+import { BiArrowBack } from "react-icons/bi";
 import { AppContext } from "../../Context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
@@ -9,6 +10,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -18,15 +20,10 @@ import Loader from "../../helpers/Loader";
 import { useAppSelector } from "../../redux/store";
 import { UserState } from "../../redux/auth/authSlice";
 
+import { ExpenseType } from "../../types";
+
 const { Search } = Input;
 const { Option } = Select;
-export interface ExpenseType {
-  transactionID: number;
-  name: string;
-  type: string;
-  datetime: string;
-  amount: string;
-}
 
 function Transaction() {
   const navigate = useNavigate();
@@ -38,7 +35,7 @@ function Transaction() {
   const [incomeTypeFilter, setIncomeTypeFilter] = useState("");
   const [transactionModeFilter, setTransactionModeFilter] = useState("");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState("");
-  const [transactionList, setTransactionList] = useState<Record<string, any>[]>([]);
+  const [transactionList, setTransactionList] = useState<ExpenseType[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [incomeTotal, setIncomeTotal] = useState(0);
   const [expenseTotal, setExpenseTotal] = useState(0);
@@ -46,10 +43,27 @@ function Transaction() {
   const [expenseTypes, setExpenseTypes] = useState<string[]>([]);
   const [transactionModes, setTransactionModes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [collectionName, setCollectionName] = useState("");
 
   useEffect(() => {
-    if (profileDetails.currentUser.user_id) getTransactionList();
-  }, [profileDetails.currentUser.user_id]);
+    if (profileDetails.currentUser.user_id) {
+        getTransactionList();
+        getCollectionDetails();
+    }
+  }, [profileDetails.currentUser.user_id, id]);
+
+  const getCollectionDetails = async () => {
+    if (!id) return;
+    try {
+        const docRef = doc(db, DB_COLLECTION_NAMES.COLLECTION, id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            setCollectionName(docSnap.data().name);
+        }
+    } catch (error) {
+        console.error("Error fetching collection details:", error);
+    }
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -107,7 +121,7 @@ function Transaction() {
       orderBy("datetime", "desc")
     );
     const querySnapshot = await getDocs(q);
-    const result = querySnapshot.docs.map((doc) => {
+    const result: ExpenseType[] = querySnapshot.docs.map((doc) => {
       const d = doc.data();
       // convert Firestore timestamp to readable date
       const createdAt = d.created_at?.seconds
@@ -119,11 +133,12 @@ function Transaction() {
       return {
         id: doc.id,
         name: d.name,
-        amount: d.amount,
+        amount: Number(d.amount),
         type: d.type,
         cashFlowType: d.cashFlowType,
         created_at: createdAt,
         updated_at: updatedAt,
+        transactionMode: d.transactionMode
       };
     });
     const income = result
@@ -156,7 +171,7 @@ function Transaction() {
     }
   };
 
-  const filteredTransaction = transactionList.filter((exp: any) => {
+  const filteredTransaction = transactionList.filter((exp: ExpenseType) => {
     const matchesSearch =
       exp.name.toLowerCase().includes(debouncedSearchText.toLowerCase()) ||
       exp.amount.toString().includes(debouncedSearchText);
@@ -189,14 +204,22 @@ function Transaction() {
       ) : (
         <>
           <div className="expense_header">
-            <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-              Transactions List
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <Button
+                type="text"
+                icon={<BiArrowBack style={{ fontSize: "1.5rem", color: "#fff" }} />}
+                onClick={() => navigate("/collection")}
+              />
+              <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+                {collectionName || "Transactions List"}
+              </div>
             </div>
             <Search
+              className="custom-search-input"
               placeholder="Search by name or amount"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 200, marginRight: 16 }}
+              style={{ width: 210, marginRight: 16 }}
             />
             <Select
               placeholder="Filter by expense type"
@@ -239,6 +262,7 @@ function Transaction() {
             </Select>
             <Button
               type="primary"
+              className="add-transaction-btn"
               onClick={() => {
                 navigate(`/collection/${id}/new`);
               }}
@@ -258,36 +282,128 @@ function Transaction() {
               {(incomeTotal - expenseTotal).toLocaleString()}
             </div>
           </div>
-          <div className="expense_list">
-            {filteredTransaction.length === 0 && (
-              <p>Transaction doesn't match your search/filter.</p>
-            )}
-            {filteredTransaction.map((exp: any) => (
-              <div key={exp.id} className="expense_item">
-                <div>{exp.name}</div>
-                <div>{exp.type}</div>
-                <div>{exp.updated_at}</div>
-                <div className="expense_item-amount">
-                  {currency} {exp.amount}
+          <div className="expense_list_container">
+            {/* 🖥️ Desktop View: Table */}
+            <div className="desktop_view">
+              <Table<ExpenseType>
+                dataSource={filteredTransaction}
+                rowKey="id"
+                pagination={{ pageSize: 8 }}
+                columns={[
+                  {
+                    title: "Transaction Name",
+                    dataIndex: "name",
+                    key: "name",
+                    render: (text: string) => <span className="table_text_bold">{text}</span>,
+                  },
+                  {
+                    title: "Amount",
+                    dataIndex: "amount",
+                    key: "amount",
+                    render: (amount: number, record: ExpenseType) => (
+                      <span
+                        className={
+                          record.cashFlowType === "income"
+                            ? "text_success"
+                            : "text_danger"
+                        }
+                      >
+                        {record.cashFlowType === "income" ? "+" : "-"}{" "}
+                        {currency} {amount}
+                      </span>
+                    ),
+                    sorter: (a: ExpenseType, b: ExpenseType) => a.amount - b.amount,
+                  },
+                  {
+                    title: "Type",
+                    dataIndex: "type",
+                    key: "type",
+                    render: (type: string) => <span className="badge">{type}</span>,
+                  },
+                  {
+                    title: "Date",
+                    dataIndex: "updated_at",
+                    key: "updated_at",
+                  },
+                  {
+                    title: "Action",
+                    key: "action",
+                    render: (_: any, record: ExpenseType) => (
+                      <div className="table_actions">
+                        <Button
+                          type="text"
+                          className="action_btn edit_btn"
+                          onClick={() =>
+                            navigate(`/collection/${id}/${record.id}`)
+                          }
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          type="text"
+                          danger
+                          className="action_btn delete_btn"
+                          loading={deletingId === record.id}
+                          onClick={() => onDelete(record.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            </div>
+
+            {/* 📱 Mobile View: Cards */}
+            <div className="mobile_view">
+              {filteredTransaction.length === 0 && (
+                <p className="no_data">Transaction doesn't match your search/filter.</p>
+              )}
+              {filteredTransaction.map((exp: ExpenseType) => (
+                <div key={exp.id} className="expense_card">
+                  <div className="card_header">
+                    <div className="header_left">
+                      <span className="card_title">{exp.name}</span>
+                      <span className="card_date">{exp.updated_at}</span>
+                    </div>
+                    <div className="header_right">
+                       <span
+                        className={`card_amount ${
+                          exp.cashFlowType === "income" ? "income" : "expense"
+                        }`}
+                      >
+                        {exp.cashFlowType === "income" ? "+" : "-"} {currency}{" "}
+                        {exp.amount}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="card_body">
+                     <span className="badge">{exp.type}</span>
+                  </div>
+
+                  <div className="card_footer">
+                    <Button
+                      block
+                      className="card_action edit"
+                      onClick={() => navigate(`/collection/${id}/${exp.id}`)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      block
+                      danger
+                      className="card_action delete"
+                      loading={deletingId === exp.id}
+                      onClick={() => onDelete(exp.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
-                <div className="expense_item-action">
-                  <Button
-                    type="primary"
-                    onClick={() => navigate(`/collection/${id}/${exp.id}`)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="primary"
-                    danger
-                    loading={deletingId === exp.id}
-                    onClick={() => onDelete(exp.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </>
       )}

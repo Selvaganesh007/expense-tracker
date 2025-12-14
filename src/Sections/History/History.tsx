@@ -12,13 +12,21 @@ import { db } from "../../../firebase";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { AppContext } from "../../Context/AppContext";
 
+import { CollectionType, ExpenseType } from "../../types";
+
 const { Search } = Input;
+
+interface HistoryTransaction extends ExpenseType {
+  collectionName?: string;
+  dateStr?: string; // differentiating from potential date object
+  timeStr?: string;
+}
 
 function History() {
   const { profileDetails } = useContext(AppContext);
   const currency =  "₹";
 
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<HistoryTransaction[]>([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +40,18 @@ function History() {
         const colRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
         const q = query(colRef, where("user_id", "==", profileDetails.user_id));
         const colSnapshot = await getDocs(q);
-        const collections = colSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const collections: CollectionType[] = colSnapshot.docs.map((doc) => {
+             const d = doc.data();
+             return {
+                 id: doc.id,
+                 name: d.name,
+                 user_id: d.user_id,
+                 created_at: d.created_at?.seconds ? new Date(d.created_at.seconds * 1000).toLocaleString() : "-",
+                 updated_at: d.updated_at?.seconds ? new Date(d.updated_at.seconds * 1000).toLocaleString() : "-",
+             };
+        });
 
-        let allTransactions: any[] = [];
+        let allTransactions: HistoryTransaction[] = [];
 
         // 2️⃣ For each collection, fetch transactions
         for (const col of collections) {
@@ -45,7 +59,7 @@ function History() {
           const txQuery = query(txRef, where("collection_id", "==", col.id));
           const txSnapshot = await getDocs(txQuery);
 
-          const txList = txSnapshot.docs.map((doc) => {
+          const txList: HistoryTransaction[] = txSnapshot.docs.map((doc) => {
             const data = doc.data();
 
             // Handle Firestore timestamp for date & time
@@ -56,13 +70,25 @@ function History() {
               date = d.format("YYYY-MM-DD");
               time = d.format("hh:mm A");
             }
+            const createdAt = data.created_at?.seconds ? new Date(data.created_at.seconds * 1000).toLocaleString() : "-";
+            const updatedAt = data.updated_at?.seconds ? new Date(data.updated_at.seconds * 1000).toLocaleString() : "-";
 
             return {
               id: doc.id,
-              ...data,
+              name: data.name,
+              type: data.type,
+              amount: Number(data.amount),
+              cashFlowType: data.cashFlowType,
+              transactionMode: data.transactionMode,
+              user_id: data.user_id,
+              collection_id: data.collection_id,
+              datetime: data.datetime,
+              created_at: createdAt,
+              updated_at: updatedAt,
+              
               collectionName: col?.name,
-              date,
-              time,
+              dateStr: date, // using distinct keys to avoid conflict if I used 'date' in ExpenseType
+              timeStr: time,
             };
           });
 
@@ -71,7 +97,7 @@ function History() {
 
         // 3️⃣ Sort by date/time (latest first)
         allTransactions.sort((a, b) =>
-          dayjs(`${b.date} ${b.time}`).diff(dayjs(`${a.date} ${a.time}`))
+          dayjs(`${b.dateStr} ${b.timeStr}`).diff(dayjs(`${a.dateStr} ${a.timeStr}`))
         );
 
         setTransactions(allTransactions);
@@ -86,7 +112,7 @@ function History() {
   }, [profileDetails.user_id]);
 
   // 🔍 Filter search
-  const filteredData = transactions.filter((item: any) => {
+  const filteredData = transactions.filter((item) => {
     const matchesSearch =
       item.name?.toLowerCase().includes(searchText.toLowerCase()) ||
       item.amount?.toString().includes(searchText) ||
@@ -107,42 +133,52 @@ function History() {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      render: (text: string) => <span className="table_text_bold">{text}</span>,
     },
     {
       title: "Category",
       dataIndex: "type",
       key: "type",
+      render: (type: string) => <span className="badge">{type}</span>,
     },
     {
       title: "Transaction Mode",
       dataIndex: "transactionMode",
       key: "transactionMode",
+      render: (mode: string) => <span className="badge">{mode}</span>,
     },
     {
       title: "Flow Type",
       dataIndex: "cashFlowType",
       key: "cashFlowType",
       render: (text: string) =>
-        text ? text.charAt(0).toUpperCase() + text.slice(1) : "-",
+        text ? (
+            <span style={{ color: text === "income" ? "#34d399" : "#f87171", fontWeight: 600 }}>
+                {text.charAt(0).toUpperCase() + text.slice(1)}
+            </span>
+        ) : (
+            "-"
+        ),
     },
     {
       title: "Date",
-      dataIndex: "date",
-      key: "date",
+      dataIndex: "dateStr",
+      key: "dateStr",
     },
     {
       title: "Time",
-      dataIndex: "time",
-      key: "time",
+      dataIndex: "timeStr",
+      key: "timeStr",
     },
     {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount: number) => (
-        <>
+      render: (amount: number, record: HistoryTransaction) => (
+        <span className={record.cashFlowType === "income" ? "text_success" : "text_danger"}>
+          {record.cashFlowType === "income" ? "+" : "-"}{" "}
           {currency} {amount}
-        </>
+        </span>
       ),
     },
   ];

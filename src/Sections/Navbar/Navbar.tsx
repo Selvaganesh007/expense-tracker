@@ -9,6 +9,7 @@ import { AppContext } from "../../Context/AppContext";
 import { CiLogout } from "react-icons/ci";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoClose } from "react-icons/io5";
+import { FaSun, FaMoon } from "react-icons/fa";
 import { Avatar, Tooltip } from "antd";
 import { useAppSelector } from "../../redux/store";
 
@@ -42,6 +43,7 @@ const NAVBAR_ITEMS = [
 
 function Navbar() {
   const { currentUser } = useAppSelector((state) => state.auth);
+  const { toggleTheme, themeMode } = useContext(AppContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
@@ -76,7 +78,25 @@ function Navbar() {
             </div>
           </NavLink>
         ))}
+
+        {/* Mobile Theme Toggle (Inside Drawer) */}
+        <div className="nav-theme-toggle" onClick={() => { toggleTheme(); closeMenu(); }}>
+            <div className="navitem">
+               <div className="tab_icon">
+                  {themeMode === "light" ? <FaMoon size={20} /> : <FaSun size={20} />}
+               </div>
+               <div className="tab_name">
+                  {themeMode === "light" ? "Dark Mode" : "Light Mode"}
+               </div>
+            </div>
+        </div>
       </div>
+      
+      {/* Desktop Theme Toggle (Outside Drawer) */}
+      <div className="theme-toggle desktop-toggle" onClick={toggleTheme}>
+        {themeMode === "light" ? <FaMoon size={20} /> : <FaSun size={20} />}
+      </div>
+
       <Tooltip title={currentUser?.display_name}>
         <div className="profile">
           {currentUser?.photoURL ? (

@@ -11,6 +11,8 @@ import {
   message,
   InputNumber,
   Spin,
+  Row,
+  Col,
 } from "antd";
 import {
   addDoc,
@@ -29,6 +31,15 @@ import { DB_COLLECTION_NAMES } from "../Utils/DB_COLLECTION_CONST";
 import { db } from "../../firebase";
 import { AppContext } from "../Context/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
+import "./TransactionForm.scss"; // Import custom styles
+import { 
+  FaMoneyBillWave, 
+  FaTag, 
+  FaCalendarAlt, 
+  FaClock, 
+  FaCreditCard 
+} from "react-icons/fa";
+import { BiCategory, BiArrowBack } from "react-icons/bi";
 
 const { Item } = Form;
 
@@ -173,25 +184,23 @@ const TransactionForm = () => {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        padding: "1rem",
-      }}
-    >
+    <div className="transaction-form-container">
       {contextHolder}
       <Card
-        style={{
-          width: "100%",
-          maxWidth: 500,
-          borderRadius: 12,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        }}
+        className="glass-form-card"
+        bordered={false}
       >
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          {isNew ? "Add Transaction" : "Edit Transaction"}
-        </h2>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem" }}>
+          <Button 
+            type="text" 
+            icon={<BiArrowBack style={{ fontSize: "1.5rem", color: "#fff" }} />} 
+            onClick={() => navigate(`/collection/${id}`)}
+            style={{ marginRight: "1rem" }}
+          />
+          <h2 style={{ margin: 0, flex: 1, textAlign: "center", paddingRight: "2.5rem" }}>
+            {isNew ? "Add Transaction" : "Edit Transaction"}
+          </h2>
+        </div>
 
         <Form
           form={form}
@@ -204,42 +213,16 @@ const TransactionForm = () => {
             time: isNew ? dayjs() : undefined,
           }}
         >
-          {/* Amount */}
-          <Item
-            label="Amount"
-            name="amount"
-            rules={[
-              { required: true, message: "Please enter an amount" },
-              {
-                type: "number",
-                min: 0.01,
-                message: "Amount must be greater than 0",
-              },
-            ]}
-          >
-            <InputNumber
-              placeholder="Enter amount"
-              size="large"
-              style={{ width: "100%" }}
-              min={0}
-              step={0.01}
-              formatter={(value) =>
-                `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
-            />
-          </Item>
           {/* Cash Flow Type */}
           <Item
-            label="Cash Flow Type"
             name="cashFlowType"
             rules={[
               { required: true, message: "Please select cash flow type" },
             ]}
           >
             <Radio.Group
+              className="custom-radio-group"
               size="large"
-              style={{ display: "flex", gap: "1rem" }}
               onChange={(e) => {
                 const value = e.target.value;
                 setSelectedCashFlow(value);
@@ -248,115 +231,174 @@ const TransactionForm = () => {
             >
               <Radio.Button
                 value="income"
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  backgroundColor:
-                    selectedCashFlow === "income" ? "#16a34a" : "#fff",
-                  color: selectedCashFlow === "income" ? "#fff" : "#16a34a",
-                }}
+                className={selectedCashFlow === "income" ? "income-active" : ""}
               >
                 Income
               </Radio.Button>
               <Radio.Button
                 value="expense"
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                  backgroundColor:
-                    selectedCashFlow === "expense" ? "#dc2626" : "#fff",
-                  color: selectedCashFlow === "expense" ? "#fff" : "#dc2626",
-                }}
+                className={selectedCashFlow === "expense" ? "expense-active" : ""}
               >
                 Expense
               </Radio.Button>
             </Radio.Group>
           </Item>
-          {/* Name */}
-          <Item
-            label="Name"
-            name="name"
-            rules={[{ required: true, message: "Please enter a name" }]}
-          >
-            <Input placeholder="Enter name" size="large" />
-          </Item>
 
-          {/* Type Dropdown */}
-          <Item
-            label="Type"
-            name="type"
-            rules={[{ required: true, message: "Please select a type" }]}
-          >
-            <Select
-              placeholder={
-                selectedCashFlow ? "Select type" : "Select cash flow type first"
-              }
-              size="large"
-              disabled={!selectedCashFlow}
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              options={(selectedCashFlow === "income"
-                ? incomeTypes
-                : selectedCashFlow === "expense"
-                  ? expenseTypes
-                  : []
-              ).map((item) => ({
-                label: item,
-                value: item,
-              }))}
-            />
-          </Item>
-          {/* Transaction Mode */}
-          <Item label="Transaction Mode" name="transactionMode">
-            <Select
-              placeholder="Select transaction mode"
-              size="large"
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              options={transactionModes.map((item) => {
-                return {
-                  label: item,
-                  value: item,
-                };
-              })}
-            />
-          </Item>
+          <Row gutter={16}>
+             {/* Name */}
+             <Col xs={24} md={12}>
+              <Item
+                label="Name"
+                name="name"
+                rules={[{ required: true, message: "Please enter a name" }]}
+              >
+                <Input 
+                  placeholder="What is this for?" 
+                  size="large" 
+                  className="custom-input"
+                  prefix={<FaTag style={{ color: "rgba(255,255,255,0.5)" }} />}
+                />
+              </Item>
+            </Col>
 
-          {/* Date */}
-          <Item
-            label="Date"
-            name="date"
-            rules={[{ required: true, message: "Please select a date" }]}
-          >
-            <DatePicker
-              format="DD/MM/YYYY"
-              style={{ width: "100%" }}
-              size="large"
-            />
-          </Item>
+            {/* Amount */}
+            <Col xs={24} md={12}>
+              <Item
+                label="Amount"
+                name="amount"
+                rules={[
+                  { required: true, message: "Please enter an amount" },
+                  {
+                    type: "number",
+                    min: 0.01,
+                    message: "Amount must be greater than 0",
+                  },
+                ]}
+              >
+                <InputNumber
+                  placeholder="Enter amount"
+                  size="large"
+                  className="custom-input"
+                  style={{ width: "100%",  }}
+                  min={0}
+                  step={0.01}
+                  prefix={<FaMoneyBillWave style={{ color: "rgba(255,255,255,0.5)", marginRight: "8px" }} />}
+                  formatter={(value) =>
+                    `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value: any) => value?.replace(/₹\s?|(,*)/g, "") ?? ""}
+                />
+              </Item>
+            </Col>
+          </Row>
 
-          {/* Time */}
-          <Item
-            label="Time"
-            name="time"
-            rules={[{ required: true, message: "Please select a time" }]}
-          >
-            <TimePicker
-              use12Hours
-              format="h:mm a"
-              minuteStep={5}
-              style={{ width: "100%" }}
-              showNow={false}
-              size="large"
-            />
-          </Item>
+          <Row gutter={16}>
+             {/* Type Dropdown */}
+             <Col xs={24} md={12}>
+              <Item
+                label="Category"
+                name="type"
+                rules={[{ required: true, message: "Please select a category" }]}
+              >
+                <Select
+                  placeholder={
+                    selectedCashFlow ? "Select category" : "Select cash flow type first"
+                  }
+                  size="large"
+                  disabled={!selectedCashFlow}
+                  allowClear
+                  showSearch
+                  className="custom-input"
+                  optionFilterProp="label"
+                  suffixIcon={<BiCategory />}
+                  options={(selectedCashFlow === "income"
+                    ? incomeTypes
+                    : selectedCashFlow === "expense"
+                      ? expenseTypes
+                      : []
+                  ).map((item) => ({
+                    label: item,
+                    value: item,
+                  }))}
+                />
+              </Item>
+            </Col>
+
+            {/* Transaction Mode */}
+            <Col xs={24} md={12}>
+              <Item 
+                label="Transaction Mode" 
+                name="transactionMode"
+                rules={[{ required: true, message: "Please select a transaction mode" }]}
+              >
+                <Select
+                  placeholder="Select mode"
+                  size="large"
+                  allowClear
+                  showSearch
+                  className="custom-input"
+                  optionFilterProp="label"
+                  suffixIcon={<FaCreditCard />}
+                  options={transactionModes.map((item) => {
+                    return {
+                      label: item,
+                      value: item,
+                    };
+                  })}
+                />
+              </Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+             {/* Date */}
+             <Col xs={24} md={12}>
+              <Item
+                label="Date"
+                name="date"
+                rules={[{ required: true, message: "Please select a date" }]}
+              >
+                <DatePicker
+                  format="DD/MM/YYYY"
+                  style={{ width: "100%" }}
+                  size="large"
+                  className="custom-input"
+                  suffixIcon={<FaCalendarAlt />}
+                />
+              </Item>
+            </Col>
+
+            {/* Time */}
+            <Col xs={24} md={12}>
+              <Item
+                label="Time"
+                name="time"
+                rules={[{ required: true, message: "Please select a time" }]}
+              >
+                <TimePicker
+                  use12Hours
+                  format="h:mm a"
+                  minuteStep={5}
+                  style={{ width: "100%" }}
+                  showNow={false}
+                  size="large"
+                  className="custom-input"
+                  suffixIcon={<FaClock />}
+                />
+              </Item>
+            </Col>
+          </Row>
 
           {/* Submit Button */}
-          <Item style={{ marginTop: "1.5rem" }}>
-            <Button type="primary" htmlType="submit" size="large" block>
-              Submit
+          <Item style={{ marginTop: "1rem" }}>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              size="large" 
+              block
+              className="submit-btn"
+            >
+              {isNew ? "Add Transaction" : "Update Transaction"}
             </Button>
           </Item>
         </Form>

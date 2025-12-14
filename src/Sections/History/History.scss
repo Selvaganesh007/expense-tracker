@@ -1,94 +1,132 @@
-.history {
-  padding: 2rem;
+@import '../../Base.scss';
 
-  .ant-table-row:hover > td {
-    background-color: #ffffff5b !important;
-    color: rgb(0, 0, 0) !important;
-    font-weight: 600;
-  }
+.history {
+  padding: 2rem 2rem;
+  color: #fff;
 
   .history_header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     gap: 1rem;
 
     .title {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: 700;
       color: #fff;
     }
   }
 
-  // AntD table customization
-  .ant-table {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 1rem;
-    overflow: hidden;
-
-    .ant-table-thead > tr > th {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-weight: 600;
-      white-space: nowrap;
+  /* Search Bar Styling */
+  .ant-input-search {
+    .ant-input-affix-wrapper,
+    &.ant-input-search {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        padding-left: 11px;
     }
 
-    .ant-table-tbody > tr > td {
-      color: #fff;
-      background: transparent;
-      font-size: 1rem;
-      word-wrap: break-word;
-      white-space: normal;
+    input.ant-input {
+      background: transparent !important;
+      color: #fff !important;
+      border: none !important;
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.8) !important;
+        opacity: 1;
+      }
+    }
+
+    /* Hide Search Icon just like Transaction if desired, or keep it. 
+       User said "same as transaction table", but usually search is part of it.
+       I'll keep standard search icon visible here unless asked, but style the input. 
+    */
+    .ant-input-suffix {
+        color: rgba(255, 255, 255, 0.6);
     }
   }
 
-  /* 📱 Mobile responsive adjustments */
+  /* Table Styling */
+  .ant-table-wrapper {
+    .ant-table {
+      background: transparent;
+      color: #e0e0e0;
+      
+      .ant-table-thead > tr > th {
+        background: rgba(30, 41, 59, 0.8);
+        color: #9ca3af;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 600;
+      }
+
+      .ant-table-tbody > tr > td {
+        background: rgba(30, 41, 59, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #f3f4f6;
+        font-size: 1rem;
+      }
+
+      .ant-table-tbody > tr:hover > td {
+        background: rgba(30, 41, 59, 1) !important;
+      }
+    }
+
+    .ant-empty {
+        color: white;
+        .ant-empty-description { color: #9ca3af; }
+    }
+
+    .ant-pagination {
+       .ant-pagination-item a { color: #e0e0e0; }
+       .ant-pagination-item-active { 
+           background: transparent; 
+           border-color: #60a5fa;
+           a { color: #60a5fa; }
+       }
+        .ant-pagination-prev .ant-pagination-item-link,
+        .ant-pagination-next .ant-pagination-item-link {
+            color: #e0e0e0;
+        }
+    }
+  }
+
+  /* Helpers for badging similar to Transaction */
+  .table_text_bold {
+      font-weight: 600;
+      color: #fff;
+  }
+  .text_success { color: #34d399; font-weight: 600; }
+  .text_danger { color: #f87171; font-weight: 600; }
+  
+  .badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #d1d5db;
+  }
+
   @media (max-width: 768px) {
     padding: 1rem;
 
     .history_header {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-
-      .title {
-        font-size: 1.25rem;
-        text-align: left;
-      }
+      align-items: stretch;
+      .ant-input-search { width: 100% !important; margin-top: 0.5rem; }
     }
 
     .ant-table {
       font-size: 0.85rem;
-
-      // Enable horizontal scroll for wide tables
-      .ant-table-container {
-        overflow-x: auto;
-      }
-
+      overflow-x: auto;
+      
       .ant-table-thead > tr > th,
       .ant-table-tbody > tr > td {
-        padding: 0.5rem;
-        text-align: left;
-        white-space: nowrap; // prevent squishing columns
-      }
-    }
-  }
-
-  /* 📱 For very small devices (below 480px) */
-  @media (max-width: 480px) {
-    .title {
-      font-size: 1rem;
-    }
-
-    .ant-table {
-      font-size: 0.75rem;
-
-      .ant-table-thead > tr > th,
-      .ant-table-tbody > tr > td {
-        padding: 0.3rem;
+        white-space: nowrap; 
+        padding: 0.8rem;
       }
     }
   }
 }
+

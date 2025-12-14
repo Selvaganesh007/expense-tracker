@@ -1,135 +1,281 @@
+@import '../../Base.scss';
+
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  background: #121212;
+  padding: 0.8rem 2rem;
+  background: rgba(15, 23, 42); 
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   font-family: "Poppins", sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 
   .app_name {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+    cursor: pointer;
   }
 
   .navlinks {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.4rem;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 
     a {
       text-decoration: none;
-      color: #fff;
-      transition: 0.3s;
+      color: #94a3b8;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 30px;
+      padding: 0.6rem 1.2rem;
+      position: relative;
+      overflow: hidden;
 
       .navitem {
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        font-size: 1rem;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        position: relative;
+        z-index: 2;
+      }
 
-        &:hover {
-          color: #00c4ff;
-        }
+      &:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
       }
 
       &.active {
-        color: #00c4ff;
-        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); // Blue gradient
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+
+        .tab_icon {
+           animation: bounce 0.4s ease;
+        }
       }
     }
 
     .close-btn {
-      display: none; // Hidden on desktop
+      display: none;
     }
+    
+    /* Mobile Toggle inside Navlinks (Hidden on Desktop) */
+    .nav-theme-toggle {
+        display: none; 
+    }
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      transform: rotate(15deg);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+  }
+  
+  /* Desktop Toggle visibility */
+  .desktop-toggle {
+      display: flex;
   }
 
   .profile {
     display: flex;
     align-items: center;
+    gap: 0.8rem;
     cursor: pointer;
-    gap: 0.6rem;
+    padding: 0.4rem;
+    border-radius: 30px;
+    transition: background 0.3s ease;
 
-    .profile_name {
-      font-size: 0.95rem;
-      font-weight: 500;
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
     }
 
     .profile-photo {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
   }
 
-  // 🔽 Hide hamburger on desktop
+  // Hamburger Icon
   .menu-icon {
     display: none;
+    color: #fff;
     cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
   }
 
   // ✅ Responsive Styles
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
+    .navlinks {
+        display: none; // Hide desktop nav links at intermediate width
+    }
+    
     .menu-icon {
-      display: block;
+        display: block; // Show hamburger even on tablets if space is tight
     }
 
+    .profile {
+       // Keep profile visible? Or hide? 
+       // Often nice to keep profile unless very small.
+       // Let's hide navlinks but keep menu icon.
+    }
+    
+    /* Mobile Menu Drawer */
     .navlinks {
       position: fixed;
       top: 0;
       right: -100%;
       height: 100vh;
-      width: 70%;
-      background: rgba(18, 18, 18, 0.98);
-      backdrop-filter: blur(10px);
-      display: flex;
+      width: 280px;
+      background: rgba(15, 23, 42);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      display: none;
       flex-direction: column;
       align-items: flex-start;
-      padding: 5rem 2rem;
-      gap: 2rem;
-      transition: right 0.4s ease;
+      padding: 6rem 1.5rem 2rem;
+      gap: 1rem;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+      border-radius: 0;
+      overflow-x: hidden;
 
       &.active {
         right: 0;
+        display: flex; // Ensure it's flex when active
       }
 
       a {
-        font-size: 1.2rem;
+        width: 100%;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        background: transparent;
+        padding: 1rem;
+        
+        &.active {
+            background: rgba(37, 99, 235, 0.15); // Lighter blue bg
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            box-shadow: none;
+        }
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
       }
 
       .close-btn {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: absolute;
-        top: 1.5rem;
+        top: 2rem;
         right: 1.5rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
         cursor: pointer;
         color: #fff;
         transition: 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.1);
 
         &:hover {
-          color: #00c4ff;
+          background: rgba(248, 113, 113, 0.2); // Red tint on hover
+          color: #f87171;
+          border-color: rgba(248, 113, 113, 0.3);
         }
       }
-    }
 
-    .profile {
-      display: none;
+      /* Mobile Theme Toggle Styling */
+      .nav-theme-toggle {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          padding: 1rem;
+          color: #94a3b8;
+          cursor: pointer;
+          border-radius: 12px;
+          transition: 0.3s;
+          margin-top: auto; /* Push to bottom if needed, or just list item */
+          
+          .navitem {
+             display: flex;
+             align-items: center;
+             gap: 0.5rem;
+             font-size: 1.1rem;
+             font-weight: 500;
+          }
+
+          &:hover {
+              background: rgba(255, 255, 255, 0.05);
+              color: #fff;
+          }
+      }
+    }
+    
+    .desktop-toggle {
+        display: none; // Hide standalone toggle on mobile
     }
   }
 
-  @media (max-width: 480px) {
-    padding: 1rem;
+  @media (max-width: 768px) {
+    padding: 0.8rem 1rem;
 
-    .app_name {
-      font-size: 1.2rem;
+    .profile {
+      display: none; // Hide profile on mobile to save space
     }
-
-    .navlinks {
-      width: 80%;
+    
+    .menu-icon {
+        display: block;
     }
   }
 }
+

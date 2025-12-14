@@ -29,11 +29,24 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     }
   }, []);
 
+  // 🌓 Theme State
+  const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
+
+  const toggleTheme = () => {
+    setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", themeMode);
+  }, [themeMode]);
+
   return (
     <AppContext.Provider
       value={{
         profileDetails,
         setProfileDetails,
+        themeMode,
+        toggleTheme,
       }}
     >
       {children}

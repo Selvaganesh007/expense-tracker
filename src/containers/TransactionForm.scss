@@ -1,0 +1,184 @@
+@import "../Base.scss";
+
+.transaction-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 80vh;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+    align-items: flex-start;
+  }
+}
+
+.glass-form-card {
+  width: 100%;
+  max-width: 800px;
+  background: rgba(30, 41, 59, 0.7) !important; // Dark glass background
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  color: #fff;
+
+  .ant-card-body {
+    padding: 2.5rem !important;
+
+    @media (max-width: 768px) {
+      padding: 1.5rem !important;
+    }
+  }
+
+  h2 {
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+    letter-spacing: 0.5px;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 450px) {
+    max-width: 300px !important;
+  }
+}
+
+// Custom Input Styles
+.custom-input,
+.ant-picker,
+.ant-select-selector,
+.ant-input-number {
+  
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease;
+
+  &:hover,
+  &:focus,
+  &-focused {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05) !important;
+
+    // Fix for icons darkening on hover
+    .ant-picker-suffix,
+    .ant-select-arrow,
+    .ant-select-clear,
+    .ant-picker-clear {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+
+  .ant-input-number-handler-wrap {
+    display: none !important;
+  }
+
+  input,
+  .ant-select-selection-item {
+    color: #fff !important;
+  }
+
+  // Placeholder styling
+  input::placeholder,
+  .ant-select-selection-placeholder {
+    color: rgba(255, 255, 255, 0.5) !important; 
+  }
+
+  .ant-select-arrow,
+  .ant-picker-suffix {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.ant-input-number-affix-wrapper-lg input.ant-input-number-input{
+    padding: 7px !important;
+}
+
+.ant-form-item-label {
+  label {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.95rem;
+  }
+}
+
+// Radio Group Styling
+.custom-radio-group {
+  display: flex !important;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1rem;
+
+  .ant-radio-button-wrapper {
+    flex: 1;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 10px !important;
+    height: 45px;
+    line-height: 43px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+
+    &:before {
+      display: none !important;
+    }
+
+    &:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    &.ant-radio-button-wrapper-checked {
+      border-color: transparent;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+      &.income-active {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%); // Emerald gradient
+      }
+
+      &.expense-active {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); // Red gradient
+      }
+    }
+  }
+}
+
+// Submit Button
+.submit-btn {
+  height: 50px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  }
+}
+
+// Mobile specific adjustments
+@media (max-width: 768px) {
+  .ant-col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .custom-radio-group {
+    flex-direction: column; // Stack radio buttons on very small screens if needed, or keep row but adjust size
+    gap: 0.5rem;
+  }
+}

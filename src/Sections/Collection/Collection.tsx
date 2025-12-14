@@ -21,17 +21,14 @@ import Loader from "../../helpers/Loader";
 import { useAppSelector } from "../../redux/store";
 import { UserState } from "../../redux/auth/authSlice";
 
+import { CollectionType } from "../../types";
+
 const { Search } = Input;
 
 const DEFAULT_COLLECTION = {
   name: "",
   user_id: "",
 };
-
-export interface CollectionType {
-  name: string;
-  user_id: string;
-}
 
 function Collection() {
   const navigate = useNavigate();
@@ -41,10 +38,10 @@ function Collection() {
   const [editId, setEditId] = useState<string | null>(null);
 
   const [collectionDetails, setCollectionDetails] =
-    useState<CollectionType>(DEFAULT_COLLECTION);
+    useState<Pick<CollectionType, "name" | "user_id">>(DEFAULT_COLLECTION);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
-  const [collectionList, setCollectionList] = useState<Record<string, any>[]>(
+  const [collectionList, setCollectionList] = useState<CollectionType[]>(
     []
   );
   const [loading, setLoading] = useState(false);
@@ -92,6 +89,7 @@ function Collection() {
       return {
         id: doc.id,
         name: d.name,
+        user_id: d.user_id,
         created_at: createdAt,
         updated_at: updatedAt,
       };
@@ -174,7 +172,7 @@ function Collection() {
     getCollectionList();
   };
 
-  const onEditClick = (item: any) => {
+  const onEditClick = (item: CollectionType) => {
     setCollectionDetails({
       name: item.name,
       user_id: profileDetails.currentUser.user_id,
@@ -219,7 +217,7 @@ function Collection() {
             </Button>
           </div>
           <div className="collection_list">
-            {collectionList.map((value, id) => {
+            {collectionList.map((value: CollectionType, id) => {
               return (
                 <div
                   key={id}
@@ -228,37 +226,49 @@ function Collection() {
                     navigate(`/collection/${encodeURIComponent(value.id)}`);
                   }}
                 >
-                  <div className="collection_item_header">
-                    <h4 className="collection_name">{value.name}</h4>
-                    <div className="collection_item-action">
+                  <div className="card_header">
+                    <h4 className="collection_name" title={value.name}>
+                      {value.name}
+                    </h4>
+                    <div className="collection_actions">
                       <Button
-                        type="primary"
+                        type="text"
+                        className="action_btn edit_btn"
+                        icon={<MdEditSquare />}
                         onClick={(e) => {
                           e.stopPropagation();
                           onEditClick(value);
                         }}
-                      >
-                        <MdEditSquare />
-                      </Button>
+                      />
                       <Button
-                        type="primary"
+                        type="text"
+                        className="action_btn delete_btn"
+                        icon={<MdDelete />}
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteClick(value.id);
                         }}
                         danger
-                      >
-                        <MdDelete />
-                      </Button>
+                      />
                     </div>
                   </div>
-                  <h4>
-                    Balance: ₹
-                    {value.balance.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </h4>
-                  <h4>Updated on: {value.updated_at}</h4>
+
+                  <div className="card_body">
+                    <span className="balance_label">Total Balance</span>
+                    <div className="balance_amount">
+                      ₹
+                      {(value.balance ?? 0).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="card_footer">
+                    <span className="updated_text">
+                      Updated: {value.updated_at}
+                    </span>
+                  </div>
                 </div>
               );
             })}
