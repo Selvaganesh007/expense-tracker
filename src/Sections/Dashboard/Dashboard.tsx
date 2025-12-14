@@ -6,12 +6,13 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import dayjs from "dayjs";
 import { Select } from "antd";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../../firebase";
 import { DB_COLLECTION_NAMES } from "../../Utils/DB_COLLECTION_CONST";
 import { useAppSelector } from "../../redux/store";
 import { UserState } from "../../redux/auth/authSlice";
 import Loader from "../../helpers/Loader";
+import { formatAmount } from "../../helpers/formatAmount";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -30,7 +31,8 @@ function Dashboard() {
     const colRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
     const q = query(
       colRef,
-      where("user_id", "==", profileDetails.currentUser.user_id)
+      where("user_id", "==", profileDetails.currentUser.user_id),
+      orderBy("created_at", "desc")
     );
     const snapshot = await getDocs(q);
 
@@ -41,8 +43,8 @@ function Dashboard() {
 
     setCollections(list);
     if (list.length > 0) {
-      setSelectedCollection(list[list.length - 1].id); // pick recent one
-      fetchTransactions(list[list.length - 1].id);
+      setSelectedCollection(list[0].id); // pick recent one
+      fetchTransactions(list[0].id);
     }
     setLoading(false);
   };
@@ -130,7 +132,7 @@ function Dashboard() {
               <div>
                 <h3>
                   {currency}
-                  {(totalIncome - totalSpending).toFixed(2)}
+                  {formatAmount((totalIncome - totalSpending).toFixed(2))}
                 </h3>
                 <p>Total balance amount</p>
               </div>
@@ -159,7 +161,7 @@ function Dashboard() {
                 </div>
                 <p className="transaction_amount">
                   {currency}
-                  {totalIncome.toFixed(2)}
+                  {formatAmount(totalIncome.toFixed(2))}
                 </p>
                 <p>For this month</p>
               </div>
@@ -172,7 +174,7 @@ function Dashboard() {
                 </div>
                 <p className="transaction_amount">
                   {currency}
-                  {totalSpending.toFixed(2)}
+                  {formatAmount(totalSpending.toFixed(2))}
                 </p>
                 <p>For this month</p>
               </div>
@@ -182,7 +184,7 @@ function Dashboard() {
             </div>
           </div>
           <div className="expense glass-card">
-            <p>Last 10 Transactions</p>
+            <p>Transactions</p>
             <div className="expense_transaction_header">
               <div>Details</div>
               <div>Category</div>
@@ -195,14 +197,13 @@ function Dashboard() {
                 const dateTimeB: any = dayjs(`${b.date} ${b.time}`);
                 return dateTimeB - dateTimeA;
               })
-              .slice(0, 10)
               .map((tx, idx) => (
                 <div key={idx} className="expense_transaction glass-card">
                   <div>{tx.name}</div>
                   <div>{tx.type}</div>
                   <div>
                     {currency}
-                    {tx.amount}
+                    {formatAmount(tx.amount)}
                   </div>
                   <div>
                     {tx.cashFlowType === "expense" ? (

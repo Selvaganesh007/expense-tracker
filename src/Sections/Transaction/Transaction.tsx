@@ -43,23 +43,19 @@ function Transaction() {
   }, [profileDetails.currentUser.user_id]);
 
   const getCollectionName = async () => {
-    try {
-      const q = query(
+    const snap = await getDocs(
+      query(
         collection(db, DB_COLLECTION_NAMES.COLLECTION),
         where("__name__", "==", id)
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        setCollectionName(snap.docs[0].data().name);
-      }
-    } catch (err) {
-      console.error(err);
-    }
+      )
+    );
+    if (!snap.empty) setCollectionName(snap.docs[0].data().name);
   };
 
   const getTransactionList = async () => {
     setLoading(true);
     const ref = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
+
     const q = query(
       ref,
       where("user_id", "==", profileDetails.currentUser.user_id),
@@ -68,6 +64,7 @@ function Transaction() {
     );
 
     const snap = await getDocs(q);
+
     let income = 0;
     let expense = 0;
 
@@ -78,11 +75,7 @@ function Transaction() {
 
       return {
         id: d.id,
-        name: data.name,
-        type: data.type,
-        transactionMode: data.transactionMode,
-        amount: data.amount,
-        cashFlowType: data.cashFlowType,
+        ...data,
         updated_at: data.updated_at?.seconds
           ? new Date(data.updated_at.seconds * 1000).toLocaleString()
           : "-",
@@ -107,6 +100,22 @@ function Transaction() {
       t.name.toLowerCase().includes(searchText.toLowerCase()) ||
       t.amount.toString().includes(searchText)
   );
+
+  const getMenu = (exp: any): MenuProps["items"] => [
+    {
+      key: "edit",
+      label: "Edit",
+      icon: <MdEditSquare />,
+      onClick: () => navigate(`/collection/${id}/${exp.id}`),
+    },
+    {
+      key: "delete",
+      label: "Delete",
+      icon: <MdDelete />,
+      danger: true,
+      onClick: () => onDelete(exp.id),
+    },
+  ];
 
   return (
     <div className="expense">
@@ -150,58 +159,107 @@ function Transaction() {
 
               <div className="stat balance">
                 <label>Balance</label>
-                <p>₹ {(incomeTotal - expenseTotal).toLocaleString()}</p>
+                <p>
+                  ₹ {(incomeTotal - expenseTotal).toLocaleString()}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* ================= TRANSACTION LIST (UNCHANGED) ================= */}
+          {/* ================= TABLE VIEW (DESKTOP) ================= */}
+          <div className="transaction_table_wrapper">
+            <table className="transaction_table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Mode</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((exp) => (
+                  <tr key={exp.id}>
+                    <td>{exp.name}</td>
+                    <td>
+                      <span className="txn-tag tag-type">{exp.type}</span>
+                    </td>
+
+                    <td>
+                      <span className="txn-tag tag-mode">{exp.transactionMode}</span>
+                    </td>
+                    <td>{exp.updated_at}</td>
+                    <td
+                      className={`amount ${exp.cashFlowType === "income"
+                        ? "income"
+                        : "expense"
+                        }`}
+                    >
+                      {exp.cashFlowType === "income" ? "+" : "-"} ₹{exp.amount}
+                    </td>
+                    <td>
+                      <td className="actions">
+                        <button
+                          className="btn-edit"
+                          onClick={() => navigate(`/collection/${id}/${exp.id}`)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="btn-delete"
+                          onClick={() => onDelete(exp.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ================= CARD VIEW (MOBILE) ================= */}
           <div className="expense_list">
-            {filtered.map((exp) => {
-              const menuItems: MenuProps["items"] = [
-                {
-                  key: "edit",
-                  label: "Edit",
-                  icon: <MdEditSquare />,
-                  onClick: () =>
-                    navigate(`/collection/${id}/${exp.id}`),
-                },
-                {
-                  key: "delete",
-                  label: "Delete",
-                  icon: <MdDelete />,
-                  danger: true,
-                  onClick: () => onDelete(exp.id),
-                },
-              ];
+            {filtered.map((exp) => (
+              <div
+                key={exp.id}
+                className="expense_item"
+                data-type={exp.cashFlowType}
+              >
+                <div className="transaction_name">{exp.name}</div>
 
-              return (
-                <div
-                  key={exp.id}
-                  className="expense_item"
-                  data-type={exp.cashFlowType}
+                <Dropdown
+                  menu={{ items: getMenu(exp) }}
+                  trigger={["click"]}
                 >
-                  <div className="transaction_name">{exp.name}</div>
+                  <CiMenuKebab className="transaction_menu" />
+                </Dropdown>
 
-                  <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-                    <CiMenuKebab className="transaction_menu" />
-                  </Dropdown>
-
-                  <div className="expense_item-amount">
-                    ₹ {exp.amount}
-                  </div>
-
-                  <div className="transaction_updatedat">
-                    {exp.updated_at}
-                  </div>
-
-                  <div className="transaction_types">
-                    <span>{exp.type}</span>
-                    <span>{exp.transactionMode}</span>
-                  </div>
+                <div
+                  className={`expense_item-amount ${exp.cashFlowType === "income"
+                    ? "income"
+                    : "expense"
+                    }`}
+                >
+                  ₹ {exp.amount}
+                  {exp.cashFlowType === "income" ? "+" : "-"}
                 </div>
-              );
-            })}
+
+                <div className="transaction_updatedat">
+                  {exp.updated_at}
+                </div>
+
+                <div className="transaction_types">
+                  <span>{exp.type}</span>
+                  <span>{exp.transactionMode}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
