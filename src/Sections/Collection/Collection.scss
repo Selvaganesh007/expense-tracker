@@ -2,7 +2,7 @@
   color: #fff;
   .collection_header {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     gap: 10px;
     margin: 2rem 0 2rem 0;
@@ -25,13 +25,18 @@
       box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.2);
       .collection_item_header {
         display: flex;
+        flex-direction: column;
         justify-content: space-between;
-        align-items: center;
+        gap: 1rem;
         .collection_name {
           text-align: center;
-          font-size: 1.5rem;
-          text-decoration: underline;
+          font-size: 2rem;
+          color: #9977ff;
         }
+      }
+      .collection_icons {
+        display: flex;
+        justify-content: space-between;
       }
       .collection_item-action {
         display: flex;
@@ -55,7 +60,6 @@
   .collection {
     .collection_header {
       display: flex;
-      flex-direction: column;
       margin: 0rem;
     }
     .collection_list {

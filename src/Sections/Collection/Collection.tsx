@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import "./Collection.scss";
-import { Button, Input, Modal } from "antd";
-import { AppContext } from "../../Context/AppContext";
+import { Button, Input, Modal, Dropdown } from "antd";
+import type { MenuProps } from "antd";
 import {
   addDoc,
   getDocs,
@@ -20,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../../helpers/Loader";
 import { useAppSelector } from "../../redux/store";
 import { UserState } from "../../redux/auth/authSlice";
+import { LuNotebookPen } from "react-icons/lu";
+import { CiMenuKebab } from "react-icons/ci";
 
 const { Search } = Input;
 
@@ -36,22 +38,23 @@ export interface CollectionType {
 function Collection() {
   const navigate = useNavigate();
   const profileDetails: UserState = useAppSelector((state) => state.auth);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-
   const [collectionDetails, setCollectionDetails] =
     useState<CollectionType>(DEFAULT_COLLECTION);
+
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
-  const [collectionList, setCollectionList] = useState<Record<string, any>[]>(
-    []
-  );
+  const [collectionList, setCollectionList] = useState<Record<string, any>[]>([]);
   const [loading, setLoading] = useState(false);
+
+  /* ---------------- Effects ---------------- */
 
   useEffect(() => {
     if (profileDetails.currentUser.user_id) getCollectionList();
-  }, [profileDetails.currentUser.user_id]);
+  }, [profileDetails.currentUser.user_id, debouncedSearchText]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -60,108 +63,36 @@ function Collection() {
     return () => clearTimeout(handler);
   }, [searchText]);
 
+  /* ---------------- Handlers ---------------- */
+
   const onDrawerClose = () => {
     setDrawerOpen(false);
     setCollectionDetails(DEFAULT_COLLECTION);
-    return true;
-  };
-
-  useEffect(() => {
-    if (profileDetails.currentUser.user_id) getCollectionList();
-  }, [profileDetails.currentUser.user_id, debouncedSearchText]);
-
-  const getCollectionList = async () => {
-    setLoading(true);
-    const usersRef = collection(db, DB_COLLECTION_NAMES.COLLECTION);
-    const q = query(
-      usersRef,
-      where("user_id", "==", profileDetails.currentUser.user_id)
-    );
-    const querySnapshot = await getDocs(q);
-
-    // Fetch all collections
-    const rawCollections = querySnapshot.docs.map((doc) => {
-      const d = doc.data();
-      const createdAt = d.created_at?.seconds
-        ? new Date(d.created_at.seconds * 1000).toLocaleString()
-        : "-";
-      const updatedAt = d.updated_at?.seconds
-        ? new Date(d.updated_at.seconds * 1000).toLocaleString()
-        : "-";
-
-      return {
-        id: doc.id,
-        name: d.name,
-        created_at: createdAt,
-        updated_at: updatedAt,
-      };
-    });
-
-    // Filter by search text (debounced)
-    const filtered = rawCollections.filter((col) =>
-      col.name.toLowerCase().includes(debouncedSearchText.toLowerCase())
-    );
-
-    // Fetch balance for each collection
-    const withBalances = await Promise.all(
-      filtered.map(async (col) => {
-        const balance = await getCollectionBalance(col.id);
-        return { ...col, balance };
-      })
-    );
-
-    setCollectionList(withBalances);
-    setLoading(false);
-  };
-
-  const getCollectionBalance = async (collectionId: string) => {
-    try {
-      const transactionRef = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
-      const q = query(
-        transactionRef,
-        where("collection_id", "==", collectionId)
-      );
-      const querySnapshot = await getDocs(q);
-
-      let income = 0;
-      let expense = 0;
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const amount = Number(data.amount) || 0;
-        if (data.cashFlowType === "income") income += amount;
-        if (data.cashFlowType === "expense") expense += amount;
-      });
-
-      return income - expense; // ✅ balance = income - expense
-    } catch (err) {
-      console.error("Error fetching balance:", err);
-      return 0;
-    }
+    setIsEdit(false);
+    setEditId(null);
   };
 
   const onAddClick = () => {
-    setCollectionDetails({ ...DEFAULT_COLLECTION });
+    setDrawerOpen(true);
     setIsEdit(false);
     setEditId(null);
-    setDrawerOpen(true);
+    setCollectionDetails(DEFAULT_COLLECTION);
   };
 
   const onCollectionAdd = async () => {
-    if (collectionDetails.name.trim() === "") {
-      return window.alert("Please enter collection name");
+    if (!collectionDetails.name.trim()) {
+      return alert("Please enter collection name");
     }
 
     if (isEdit && editId) {
-      const docRef = doc(db, DB_COLLECTION_NAMES.COLLECTION, editId);
-      await updateDoc(docRef, {
-        ...collectionDetails,
-        updated_at: serverTimestamp(),
-      });
+      await updateDoc(
+        doc(db, DB_COLLECTION_NAMES.COLLECTION, editId),
+        {
+          ...collectionDetails,
+          updated_at: serverTimestamp(),
+        }
+      );
     } else {
-      console.log(profileDetails);
-
-      debugger;
       await addDoc(collection(db, DB_COLLECTION_NAMES.COLLECTION), {
         ...collectionDetails,
         user_id: profileDetails.currentUser.user_id,
@@ -184,19 +115,68 @@ function Collection() {
     setDrawerOpen(true);
   };
 
-  const handleChange = (field: string, value: any) => {
-    setCollectionDetails({
-      ...collectionDetails,
-      [field]: value,
-    });
-  };
-
   const onDeleteClick = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this collection?")) {
       await deleteDoc(doc(db, DB_COLLECTION_NAMES.COLLECTION, id));
       getCollectionList();
     }
   };
+
+  const handleChange = (field: string, value: any) => {
+    setCollectionDetails({ ...collectionDetails, [field]: value });
+  };
+
+  /* ---------------- Firebase ---------------- */
+
+  const getCollectionList = async () => {
+    setLoading(true);
+    const ref = collection(db, DB_COLLECTION_NAMES.COLLECTION);
+    const q = query(ref, where("user_id", "==", profileDetails.currentUser.user_id));
+    const snap = await getDocs(q);
+
+    const collections = await Promise.all(
+      snap.docs.map(async (d) => {
+        const data = d.data();
+        const balance = await getCollectionBalance(d.id);
+
+        return {
+          id: d.id,
+          name: data.name,
+          balance,
+          updated_at: data.updated_at?.seconds
+            ? new Date(data.updated_at.seconds * 1000).toLocaleString()
+            : "-",
+        };
+      })
+    );
+
+    const filtered = collections.filter((c) =>
+      c.name.toLowerCase().includes(debouncedSearchText.toLowerCase())
+    );
+
+    setCollectionList(filtered);
+    setLoading(false);
+  };
+
+  const getCollectionBalance = async (collectionId: string) => {
+    const ref = collection(db, DB_COLLECTION_NAMES.TRANSACTION);
+    const q = query(ref, where("collection_id", "==", collectionId));
+    const snap = await getDocs(q);
+
+    let income = 0;
+    let expense = 0;
+
+    snap.forEach((d) => {
+      const data = d.data();
+      const amount = Number(data.amount) || 0;
+      if (data.cashFlowType === "income") income += amount;
+      if (data.cashFlowType === "expense") expense += amount;
+    });
+
+    return income - expense;
+  };
+
+  /* ---------------- UI ---------------- */
 
   return (
     <div className="collection">
@@ -205,75 +185,88 @@ function Collection() {
       ) : (
         <>
           <div className="collection_header">
-            <div style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
-              Collection List
-            </div>
+            <h2>Collection List</h2>
             <Search
               placeholder="Search by collection name"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 200, marginRight: 16 }}
+              style={{ width: 200 }}
             />
-            <Button type="primary" onClick={onAddClick}>
+            <Button type="primary" onClick={onAddClick} size="large">
               Add collection
             </Button>
           </div>
           <div className="collection_list">
-            {collectionList.map((value, id) => {
+            {collectionList.map((value) => {
+              const menuItems: MenuProps["items"] = [
+                {
+                  key: "edit",
+                  label: "Edit",
+                  icon: <MdEditSquare />,
+                  onClick: ({ domEvent }) => {
+                    domEvent.stopPropagation();
+                    onEditClick(value);
+                  },
+                },
+                {
+                  key: "delete",
+                  label: "Delete",
+                  icon: <MdDelete />,
+                  danger: true,
+                  onClick: ({ domEvent }) => {
+                    domEvent.stopPropagation();
+                    onDeleteClick(value.id);
+                  },
+                },
+              ];
+
               return (
                 <div
-                  key={id}
+                  key={value.id}
                   className="collection_item"
-                  onClick={() => {
-                    navigate(`/collection/${encodeURIComponent(value.id)}`);
-                  }}
+                  onClick={() =>
+                    navigate(`/collection/${encodeURIComponent(value.id)}`)
+                  }
                 >
+                  <div className="collection_icons">
+                    <LuNotebookPen size="50px" />
+                    <Dropdown
+                      menu={{ items: menuItems }}
+                      trigger={["click"]}
+                      placement="bottomRight"
+                    >
+                      <CiMenuKebab
+                        size="22px"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </Dropdown>
+                  </div>
                   <div className="collection_item_header">
                     <h4 className="collection_name">{value.name}</h4>
-                    <div className="collection_item-action">
-                      <Button
-                        type="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditClick(value);
-                        }}
-                      >
-                        <MdEditSquare />
-                      </Button>
-                      <Button
-                        type="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteClick(value.id);
-                        }}
-                        danger
-                      >
-                        <MdDelete />
-                      </Button>
-                    </div>
+                    <h4>
+                      Balance: ₹
+                      {value.balance.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </h4>
+                    <h4>Updated on: {value.updated_at}</h4>
                   </div>
-                  <h4>
-                    Balance: ₹
-                    {value.balance.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </h4>
-                  <h4>Updated on: {value.updated_at}</h4>
                 </div>
               );
             })}
           </div>
+
           <Modal
             title={isEdit ? "Edit Collection" : "Add New Collection"}
-            closable={{ "aria-label": "Custom Close Button" }}
             open={drawerOpen}
-            onOk={() => onCollectionAdd()}
+            onOk={onCollectionAdd}
             onCancel={onDrawerClose}
             maskClosable={false}
           >
             <label>Name</label>
             <Input
-              placeholder="Expense name"
+              placeholder="Collection name"
               value={collectionDetails.name}
               onChange={(e) => handleChange("name", e.target.value)}
             />
