@@ -246,8 +246,7 @@ function Transaction() {
                     : "expense"
                     }`}
                 >
-                  ₹ {exp.amount}
-                  {exp.cashFlowType === "income" ? "+" : "-"}
+                  {exp.cashFlowType === "income" ? "+" : "-"} ₹{exp.amount}
                 </div>
 
                 <div className="transaction_updatedat">
